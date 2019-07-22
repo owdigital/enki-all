@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  ereshkigal:
+    image: enki/ereshkigal:latest
+    links:
+      - hydra-enki
+      - hydra-bank-a
+      - hydra-setup-bank-a
+      - enki
+      - bank-a
+      - bank-b
+      - agent-a
+      - agent-b
+    environment:
+      - BASIC_USERNAME=enki
+      - BASIC_PASSWORD=
+      - ENKI_SERVER_URL=http://enki:3000
+      - HYDRA_URLS=
+      - BANK_URLS=http://bank-a:9001 https://bank-b:9002
+    entrypoint: bash -c ". VENV/bin/activate && /bin/wait-for-it --timeout=60 agent-a:3010 -- /bin/wait-for-it --timeout=60 agent-b:3011 -- pytest --junitxml=junit-report.xml --capture=no -vvv -m ''"

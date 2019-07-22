@@ -1,0 +1,67 @@
+@import "../base/_variables";
+
+.edit-item {
+  color: $tool-font-default-colour;
+  font-size: $font-size-base;
+  margin-bottom: 27px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    font-weight: bold;
+    font-style: normal;
+    height: 40px;
+    padding-top: 6px;
+    text-align: right;
+
+    &.has-sublabel {
+      padding-top: 0;
+    }
+
+    .sublabel {
+      display: block;
+      font-weight: normal;
+      font-size: 0.8em;
+    }
+  }
+
+  .input-field-sizing {
+    height: 40px;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .input-field-sizing-large {
+    min-height: 40px;
+    width: 100%;
+    max-width: 500px;
+  }
+}
+
+.view-only {
+    .version-details-warning {
+        border: 1px solid $tool-yellow;
+        display: block;
+        margin-bottom: 25px;
+        padding-top: 5px;
+    }
+
+    .edit-item {
+        margin-bottom: 5px;
+
+        .edit-item-text {
+            padding-top: 6px;
+        }
+    }
+}
+
+.two-select-header {
+  font-size: $font-size-smaller;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 0 10px 0;
+  text-align: left;
+}

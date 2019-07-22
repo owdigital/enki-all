@@ -1,0 +1,110 @@
+#!/bin/bash
+set -e -o nounset -o pipefail
+
+DEFAULT_ZONE=temp-enki.labshift.io
+DEFAULT_REGISTRY=286982628803.dkr.ecr.eu-central-1.amazonaws.com/enki/postgres
+registry=${REGISTRY:-$DEFAULT_REGISTRY}
+KUBECTL=kubectl
+if [ ! -z "${K8S_CONTEXT:-}" ]; then
+  KUBECTL="$KUBECTL --context $K8S_CONTEXT"
+fi
+
+usage() {
+  echo "Usage: $0: [-d] [ -z subdomain ] [ -f output.yaml ] k8s-namespace image-tag enki-core-tag agent-tag"
+  echo "  -d: Delete resources before creating them (for dev branches)"
+  echo "  -z: DNS Zone to use (defaults to k8s-namespace.$DEFAULT_ZONE)"
+  echo "  -f: Write output yaml to ‘output.yaml’"
+}
+
+delete=false
+workdir=$(mktemp -d)
+deploy_config="${workdir}/deploy.yaml"
+zone=''
+
+while getopts "dhz:f:" o; do
+  case "$o" in
+    d)
+      delete=true
+      ;;
+    z)
+      zone="$OPTARG"
+      ;;
+    f)
+      deploy_config="$OPTARG"
+      ;;
+    h):
+      usage
+      exit 0
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+if [ $# -ne 7 ]; then
+  usage
+  exit 1
+fi
+
+namespace=$1
+bank_ui_tag=$2
+enki_core_tag=$3
+agent_tag=$4
+consus_tag=$5
+postgres_tag=$6
+hydra_tag=$7
+
+if [ -z "$zone" ]; then
+  zone=${namespace}.${DEFAULT_ZONE}
+fi
+
+if ! $KUBECTL get ns ${namespace}; then
+  $KUBECTL create ns ${namespace}
+fi
+
+tmpf=$(mktemp "$workdir/.joined.XXXXXXXX")
+
+dir=${0%/*}
+
+# Munge in the correct image version
+for f in ${dir}/*.yaml; do
+  echo "---"
+  env \
+    "BANK_UI_VERSION=${bank_ui_tag}" \
+    "ENKI_CORE_VERSION=${enki_core_tag}" \
+    "AGENT_VERSION=${agent_tag}" \
+    "CONSUS_VERSION=${consus_tag}" \
+    "POSTGRES_VERSION=${postgres_tag}" \
+    "HYDRA_SETUP_VERSION=${hydra_tag}" \
+    "K8S_ZONE=${zone}" \
+    "K8S_NAMESPACE=${namespace}" \
+    envsubst < "$f" '$AGENT_VERSION $BANK_UI_VERSION $DEMO_SUITE_VERSION $ENKI_CORE_VERSION $CONSUS_VERSION $POSTGRES_VERSION $HYDRA_SETUP_VERSION $K8S_ZONE $K8S_NAMESPACE $REGISTRY'
+done > "$tmpf"
+
+mv -v "$tmpf" "$deploy_config"
+
+if [ "$delete" = "true" ]; then
+  for res in ingress services deployments statefulsets jobs pods persistentvolumeclaims; do
+    $KUBECTL --namespace ${namespace} delete "$res" --all
+  done
+fi
+
+# Because we're using `deployments` rather than plain
+# replication controllers, we can just use `apply` and
+# have the deployment controller manage it for us. cf:
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment
+status=0
+for n in {1..3}; do
+  if $KUBECTL --namespace ${namespace} apply -f "${deploy_config}"; then
+    status=$?
+    break;
+  else
+   status=$?
+   sleep 1
+  fi
+done
+
+if [[ $status -ne 0 ]]; then
+  exit $status
+fi
+

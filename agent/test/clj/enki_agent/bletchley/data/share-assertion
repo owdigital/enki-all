@@ -1,0 +1,10 @@
+{
+  "type": "share-assertion",
+  "id": "c563c086-f5e7-46b6-8be7-e96a4c02ea62",
+  "sharingProcessorId": "sample-bank",
+  "metadataId": "e284a859-c24d-4599-982a-7f3e80480e6a",
+  "purposeId": "a4cd2c37-786d-4601-a0b5-83e32b1e0077",
+  "createdAt": "2017-10-02T13:38:51+01:00",
+  "consentStart": "2017-10-02T13:38:51+01:00",
+  "consentEnd": "2017-10-03T13:38:51+01:00"
+}

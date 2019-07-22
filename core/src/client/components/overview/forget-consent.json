@@ -1,0 +1,166 @@
+[
+  {
+    "AccountNumber": "4924tdfr",
+    "Product": "Loan",
+    "ExpiryDate": "12 July 2017",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "1",
+        "date": "28 May 2017",
+        "activity": "Right to be Forgotten request received",
+        "comments": []
+      },
+      {
+        "eventID": "2",
+        "date": "29 May 2017",
+        "activity": "Inactive status of product confirmed",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "1238BCD",
+    "Product": "Credit Account",
+    "ExpiryDate": "05 July 2018",
+    "FieldsCount": 5,
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "1",
+        "date": "28 May 2018",
+        "activity": "Right to be Forgotten request received",
+        "comments": []
+      },
+      {
+        "eventID": "2",
+        "date": "29 May 2018",
+        "activity": "Inactive status of product confirmed",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "7879xyz",
+    "Product": "Mortgage",
+    "ExpiryDate": "07 July 2018",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address",
+      "Postcode",
+      "Date of birth"
+    ],
+    "Area": "Asia",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "1",
+        "date": "28 May 2018",
+        "activity": "Right to be Forgotten request received",
+        "comments": []
+      },
+      {
+        "eventID": "2",
+        "date": "29 May 2018",
+        "activity": "Inactive status of product confirmed",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "4924fds",
+    "Product": "Mortgage",
+    "ExpiryDate": "12 July 2018",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address",
+      "Postcode",
+      "Marital status"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "1",
+        "date": "28 May 2018",
+        "activity": "Right to be Forgotten request received",
+        "comments": []
+      },
+      {
+        "eventID": "2",
+        "date": "29 May 2018",
+        "activity": "Inactive status of product confirmed",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "4404tds",
+    "Product": "Savings",
+    "ExpiryDate": "12 July 2018",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address",
+      "Telephone number",
+      "Place of birth",
+      "Mothers maiden name"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "1",
+        "date": "28 May 2018",
+        "activity": "Right to be Forgotten request received",
+        "comments": []
+      },
+      {
+        "eventID": "2",
+        "date": "29 May 2018",
+        "activity": "Inactive status of product confirmed",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "4054tds",
+    "Product": "Loan",
+    "ExpiryDate": "12 July 2017",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "1",
+        "date": "28 May 2018",
+        "activity": "Right to be Forgotten request received",
+        "comments": []
+      },
+      {
+        "eventID": "2",
+        "date": "29 May 2018",
+        "activity": "Inactive status of product confirmed",
+        "comments": []
+      }
+    ]
+  }
+]

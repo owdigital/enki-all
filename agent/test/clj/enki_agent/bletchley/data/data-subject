@@ -1,0 +1,6 @@
+{
+  "type": "data-subject",
+  "id": "foo:bar",
+  "subjectType": "user-bank-customer",
+  "processorId": "beta"
+}

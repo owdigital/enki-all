@@ -1,0 +1,50 @@
+.metric-container{
+    display:inline-block;
+    overflow:hidden;
+    margin-right: 7px;
+    height: 30px;
+    text-align: right;
+    margin-top: 3px;
+    
+    .metric-value{
+        font-weight:bold;
+        padding: 0 4px;
+    }
+    .metric-target{
+        //color: #666666;
+        padding: 0 4px;
+        font-style: italic;
+    }
+    .metric-tag{
+        display: inline-block;
+        margin-left: 1px;
+        margin-top: -27px;
+        position:absolute;
+        width:3px;
+        height:24px;
+        
+        
+    }
+    
+    &.metric-red{
+        color: @brand-danger !important;
+        
+        .metric-tag{
+            background-color: @brand-danger;
+        }
+    }
+    &.metric-amber{
+        color: @brand-warning !important;
+        
+        .metric-tag{
+            background-color: @brand-warning;
+        }
+    }
+    &.metric-green{
+       color: @brand-success !important;
+        
+        .metric-tag{
+            background-color: @brand-success;
+        }
+    }
+}

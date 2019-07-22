@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  bank-a:
+    image: enki/bank-a-web-ui:latest
+    links:
+      - hydra-enki
+      - hydra-bank-a
+      - hydra-setup-bank-a
+    environment:
+      - BANK_NAME=Bank A
+      - BANK_THEME=bank-a
+      - ENKI_BACKCHANNEL_URL=http://enki:3000
+      - ENKI_URL=http://enki:3000
+      - ENKI_HYDRA_URL=http://hydra-enki:4444
+      - ENKI_EXTERNAL_HYDRA_URL=http://localhost:5444
+      - ENKI_OAUTH_CLIENT_ID=bank-a-client
+      - ENKI_OAUTH_CLIENT_SECRET=bank-a-secret
+      - ENKI_OAUTH_CALLBACK=http://localhost:9001/signupcallback
+      - HYDRA_CLIENT_ID=consent-app
+      - HYDRA_CLIENT_SECRET=consent-secret
+      - HYDRA_URL=http://hydra-bank-a:4444
+      - HYDRA_EXTERNAL_URL=http://localhost:4444
+      - AGENT_URL=http://agent-a:3010
+      - PORT=9001
+    ports:
+      - 9001:9001
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9001/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+  bank-b:
+    image: enki/bank-b-web-ui:latest
+    links:
+      - hydra-enki
+      - hydra-bank-b
+      - hydra-setup-bank-b
+    environment:
+      - BANK_NAME=Bank B
+      - BANK_THEME=bank-b
+      - ENKI_BACKCHANNEL_URL=http://enki:3000
+      - ENKI_URL=http://enki:3000
+      - ENKI_HYDRA_URL=http://hydra-enki:4444
+      - ENKI_EXTERNAL_HYDRA_URL=http://localhost:5444
+      - ENKI_OAUTH_CLIENT_ID=bank-b-client
+      - ENKI_OAUTH_CLIENT_SECRET=bank-b-secret
+      - ENKI_OAUTH_CALLBACK=http://localhost:9002/signupcallback
+      - HYDRA_CLIENT_ID=consent-app
+      - HYDRA_CLIENT_SECRET=consent-secret
+      - HYDRA_URL=http://hydra-bank-b:4444
+      - HYDRA_EXTERNAL_URL=http://localhost:4445
+      - AGENT_URL=http://agent-b:3011
+      - PORT=9002
+    ports:
+      - 9002:9002
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9002/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3

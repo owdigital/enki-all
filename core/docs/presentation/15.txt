@@ -1,0 +1,19 @@
+@startuml
+
+package "BankA" {
+  [Backend A] - [Enki Agent A]
+}
+
+package "BankB" {
+  [Backend B] - [Enki Agent B]
+}
+
+package "Enki" {
+  [Data Permissions]
+}
+
+:Alice: --> [Data Permissions] : sees permissions
+[Data Permissions] --> [Backend A] : Bank A permissions
+[Data Permissions] --> [Backend B] : Bank B permissions
+
+@enduml

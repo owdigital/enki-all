@@ -1,0 +1,88 @@
+//
+// Fonts
+// --------------------------------------------------
+
+/*
+  Font declaration for Slate.
+*/
+
+@font-face{
+  font-family:"Slate Std";
+  src:url("/fonts/slate/slate_w01_bold.eot?#iefix");
+  src:url("/fonts/slate/slate_w01_bold.eot?#iefix") format("eot"),
+  url("/fonts/slate/slate_w01_bold.woff") format("woff"),
+  url("/fonts/slate/slate_w01_bold.ttf") format("truetype"),
+  url("/fonts/slate/slate_w01_bold.svg#{'#db978b75'}-1d87-4a94-98f8-4f05471202da") format("svg");
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face{
+  font-family:"Slate Std";
+  src:url("/fonts/slate/slate_w01_bold_italic.eot?#iefix");
+  src:url("/fonts/slate/slate_w01_bold_italic.eot?#iefix") format("eot"),
+  url("/fonts/slate/slate_w01_bold_italic.woff") format("woff"),
+  url("/fonts/slate/slate_w01_bold_italic.ttf") format("truetype"),
+  url("/fonts/slate/slate_w01_bold_italic.svg#{'#5f106acc'}-9f2c-41cb-8023-add909e6b9d2") format("svg");
+  font-weight: bold;
+  font-style: italic;
+}
+@font-face{
+  font-family:"Slate Std Book";
+  src:url("/fonts/slate/slate_w01_bk.eot?#iefix");
+  src:url("/fonts/slate/slate_w01_bk.eot?#iefix") format("eot"),
+  url("/fonts/slate/slate_w01_bk.woff") format("woff"),
+  url("/fonts/slate/slate_w01_bk.ttf") format("truetype"),
+  url("/fonts/slate/slate_w01_bk.svg#{'#cee327ea'}-b14e-45be-860f-f5d226b92bf3") format("svg");
+  font-weight: 900;
+  font-style: normal;
+}
+@font-face{
+  font-family:"Slate Std Book";
+  src:url("/fonts/slate/slate_w01_bk_italic.eot?#iefix");
+  src:url("/fonts/slate/slate_w01_bk_italic.eot?#iefix") format("eot"),
+  url("/fonts/slate/slate_w01_bk_italic.woff") format("woff"),
+  url("/fonts/slate/slate_w01_bk_italic.ttf") format("truetype"),
+  url("/fonts/slate/slate_w01_bk_italic.svg#{'#5bd800fd'}-d759-4593-85b2-2ae5f3b34571") format("svg");
+  font-weight: 900;
+  font-style: italic;
+}
+@font-face{
+  font-family:"Slate Std";
+  src:url("/fonts/slate/slate_w01_light.eot?#iefix");
+  src:url("/fonts/slate/slate_w01_light.eot?#iefix") format("eot"),
+  url("/fonts/slate/slate_w01_light.woff") format("woff"),
+  url("/fonts/slate/slate_w01_light.ttf") format("truetype"),
+  url("/fonts/slate/slate_w01_light.svg#{'#90170f09'}-fd56-4d81-9183-89f4d3023375") format("svg");
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face{
+  font-family:"Slate Std";
+  src:url("/fonts/slate/slate_w01_light_italic.eot?#iefix");
+  src:url("/fonts/slate/slate_w01_light_italic.eot?#iefix") format("eot"),
+  url("/fonts/slate/slate_w01_light_italic.woff") format("woff"),
+  url("/fonts/slate/slate_w01_light_italic.ttf") format("truetype")
+  ,url("/fonts/slate/slate_w01_light_italic.svg#{'#0fcb97c8'}-ff58-4a2f-86c1-ef8ba4d2cfea") format("svg");
+  font-weight: 100;
+  font-style: italic;
+}
+@font-face{
+  font-family:"Slate Std";
+  src:url("/fonts/slate/slate_w01_normal.eot?#iefix");
+  src:url("/fonts/slate/slate_w01_normal.eot?#iefix") format("eot"),
+  url("/fonts/slate/slate_w01_normal.woff") format("woff"),
+  url("/fonts/slate/slate_w01_normal.ttf") format("truetype"),
+  url("/fonts/slate/slate_w01_normal.svg#{'#f18b502a'}-d62a-4454-96ee-ab538e38e037") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face{
+  font-family:"Slate Std";
+  src:url("/fonts/slate/slate_w01_normal_italic.eot?#iefix");
+  src:url("/fonts/slate/slate_w01_normal_italic.eot?#iefix") format("eot"),
+  url("/fonts/slate/slate_w01_normal_italic.woff") format("woff"),
+  url("/fonts/slate/slate_w01_normal_italic.ttf") format("truetype"),
+  url("/fonts/slate/slate_w01_normal_italic.svg#{'#d1528ae2'}-a27a-446d-ac6a-160a9ff9b677") format("svg");
+  font-weight: normal;
+  font-style: italic;
+}

@@ -1,0 +1,99 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hydra
+  annotations:
+    enki.services/git-version: ${HYDRA_SETUP_VERSION}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        app: hydra
+    spec:
+      initContainers:
+      - name: await-postgres
+        image: postgres:9.6-alpine
+        command: ['sh', '-xc', 'until pg_isready -U postgres -h pg-core -d hydra; do sleep 1; done']
+      - name: migrate
+        env:
+        - name: DISABLE_TELEMETRY
+          value: "1"
+        image: oryd/hydra:v0.9.16-without-telemetry
+        command: ['/go/bin/hydra', 'migrate', 'sql', 'postgres://postgres:postgres@pg-core:5432/hydra?sslmode=disable']
+      containers:
+      - name: hydra
+        env:
+        - name: DATABASE_URL
+          value: postgres://postgres:postgres@pg-core:5432/hydra?sslmode=disable
+        - name: DISABLE_TELEMETRY
+          value: "1"
+        - name: FORCE_ROOT_CLIENT_CREDENTIALS
+          value: admin:demo-password
+        - name: ISSUER
+          value: https://hydra.${K8S_ZONE}/
+        - name: SYSTEM_SECRET
+          value: y82XL-wAPCCZu+B4
+        - name: CONSENT_URL
+          value: https://enki.${K8S_ZONE}/consent
+        - name: AUTH_CODE_LIFESPAN
+          value: 1h
+        - name: CHALLENGE_TOKEN_LIFESPAN
+          value: 1h
+        image: oryd/hydra:v0.9.16-without-telemetry
+        command:
+          - /go/bin/hydra
+          - host
+          - --dangerous-force-http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4444
+        ports:
+        - name: hydra
+          containerPort: 4444
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"
+      - name: hydra-setup-core
+        image: ${REGISTRY}enki/hydra-setup-core:${HYDRA_SETUP_VERSION}
+        # Pause indefinitely once done.
+        command:
+          - bash
+          - -xce
+          - |
+              /srv/configure-core-hydra.sh
+              /srv/setup-readiness-check.sh
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+        env:
+        - name: DATABASE_URL
+          value: postgres://postgres:postgres@pg-core:5432/hydra?sslmode=disable
+        - name: DISABLE_TELEMETRY
+          value: "1"
+        - name: INSTANCE
+          value: http://localhost:4444
+        - name: DOMAIN_NAME
+          value: ${K8S_ZONE}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hydra
+spec:
+  selector:
+    app: hydra
+  type: NodePort
+  ports:
+  - name: hydra-http
+    port: 80
+    targetPort: hydra
+    protocol: TCP
+

@@ -1,0 +1,63 @@
+# OS X
+.DS_Store*
+Icon?
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+.directory
+*~
+
+# npm
+/node_modules
+*.log
+*.gz
+package-lock.json
+
+# yarn
+/packages-cache
+
+# Compiled output
+# core.css - will re-ignore this once the build does LESS -> CSS
+client/builds
+
+# Testing
+coverage/
+npmLicenses.json
+bowerLicenses.json
+*Tests.xml
+.nyc_output/
+
+# IDEs
+.idea/
+nbproject/
+*.sublime-project
+*.sublime-workspace
+
+# Docker
+docker/ssh-key/key.txt
+docker/ssh-key/id_rsa
+
+/mongoConnectionString.json
+/client/css/core.css
+/client/css/core.css.map
+/client/css/custom.css
+/server/sessions/*.json
+/server/ssl/*.pem
+/logging-config.js
+/build-properties.json
+dist
+
+*.min.*
+
+# Config files - put safe info in config.json.  The following files are for sensitive info, so shouldn't be put in repo.
+dev.json
+staging.json
+production.json
+.vscode/launch.json
+
+.labskitrc

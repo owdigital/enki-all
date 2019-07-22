@@ -1,0 +1,116 @@
+//
+// Enki-brand
+// --------------------------------------------------
+
+
+$bank-a: #2E4DA9;
+$bank-a-h:#6C86D5;
+$bank-b: #23C03E;
+$bank-b-h:#64E17A;
+$enki-l: #5DBFCD;
+$enki-h: #89D8E3;
+$enki-d: #3BA4B3;
+$enki-text: #1E8B9A;
+
+.v--modal-overlay .v--modal-box{
+  overflow: visible !important;
+}
+
+h1.navbar-brand {
+    float: left;
+    padding: 5px 5px 5px 5px;
+    margin-right: 20px;
+    margin-bottom: 0px;
+    margin-top: 0px;
+    font-size: 3rem;
+    line-height: 1;
+}
+h1.navbar-brand a:active,
+h1.navbar-brand a:hover {
+    text-decoration: none;
+}
+h4.panel-brand {
+  font-size: 3rem;
+}
+
+.enki-logo:before {
+  font-family: FontAwesome;
+  font-size: 85%;
+  content:"\f023";
+  margin-right: 0.4rem;
+  color: $enki-d;
+}
+.enki-logo {
+  color: $enki-d;
+}
+
+span.bank-a:before,
+span.bank-b:before,
+span.bank-a-client:before,
+span.bank-b-client:before  {
+  font-family: 'FontAwesome';
+  font-size: 103%;
+  content:"\f0d6";
+  margin-right: 0.6rem;
+}
+
+span.bank-a,
+span.bank-b,
+span.bank-a-client,
+span.bank-b-client {
+  padding: 0 0.4rem 0 0.4rem;
+}
+
+span.bank-a,
+span.bank-a-client {
+  color: $bank-a;
+}
+
+span.bank-b,
+span.bank-b-client {
+  color: $bank-b;
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-brand :hover,
+.navbar-default .navbar-brand :focus {
+    color: $enki-text;
+}
+
+.navbar-default .navbar-nav  .active  a,
+.navbar-default .navbar-nav  .active a:focus{
+    color: $enki-text;
+    background-color: $enki-h;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+.navbar-default .navbar-nav  .active a:hover,
+ {
+    background-color: $enki-l;
+}
+
+.intro {
+  margin: 13px 0px;
+  color: $enki-text;
+}
+
+.input-label {
+  align-items: center;
+  display: flex;
+  font-weight: bold;
+  color: $enki-text;
+}
+
+.enki-bg {
+  background: white;
+  border-color: transparent;
+  border-radius: 12px;
+  border-color: transparent;
+  padding: 10px 25px 25px 25px;
+  margin: 12px;
+  color: $enki-text;
+}
+
+.hiddenRow {
+    padding: 0 !important;
+}

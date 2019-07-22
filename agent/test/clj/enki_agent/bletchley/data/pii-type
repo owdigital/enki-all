@@ -1,0 +1,5 @@
+{
+  "type": "pii-type",
+  "id": "surname",
+  "description": "Surname"
+}

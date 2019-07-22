@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  postgres:
+    image: enki/postgres:${IMAGE_TAG:-latest}
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_MULTIPLE_DATABASES=core,test
+    entrypoint: /usr/bin/env
+    command: ["sh", "-c", "/usr/local/bin/docker-init.sh && exec /usr/local/bin/docker-entrypoint.sh postgres"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+  hydra:
+    image: oryd/hydra:v0.9.16-without-telemetry
+    environment:
+      - LOG_LEVEL=debug
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=memory
+      - FORCE_ROOT_CLIENT_CREDENTIALS=admin:demo-password
+      - ISSUER=http://hydra:4444/
+      - SYSTEM_SECRET=y82XL-wAPCCZu+B4
+      - CONSENT_URL=http://localhost:9020/consent
+      - AUTH_CODE_LIFESPAN=1h
+      - CHALLENGE_TOKEN_LIFESPAN=1h
+    entrypoint: ["hydra", "host", "--dangerous-force-http"]
+  core-test:
+    build:
+      context: .
+      dockerfile: ./integration_test/Dockerfile
+    depends_on:
+      - hydra
+      - postgres
+    environment:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/test?user=postgres&password=postgres
+      - CORE_DATABASE_URL=jdbc:postgresql://postgres:5432/core?user=postgres&password=postgres
+      - HYDRA_SERVER_URL=http://hydra:4444
+      - HYDRA_ADMIN_LOGIN=admin
+      - HYDRA_ADMIN_PASSWORD=demo-password
+      - HYDRA_CLIENT_ID=consent-app
+      - HYDRA_CLIENT_SECRET=consent-secret
+
+

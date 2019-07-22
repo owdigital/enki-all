@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  keyserver:
+    ports:
+      - 8070:8070
+  upspinserver:
+    ports:
+      - 8090:8090
+  bank-a:
+    extra_hosts:
+     - "enki:${MY_EXTERNAL_IP}"
+     - "agent-a:${MY_EXTERNAL_IP}"

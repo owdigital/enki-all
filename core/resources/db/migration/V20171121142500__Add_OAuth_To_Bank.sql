@@ -1,0 +1,1 @@
+ALTER TABLE bank ADD COLUMN oauth_client_id TEXT NOT NULL DEFAULT ''

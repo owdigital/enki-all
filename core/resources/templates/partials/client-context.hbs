@@ -1,0 +1,5 @@
+<script>
+    {{#each this}}
+    app.context['{{@key}}'] = {{{json this}}};
+    {{/each}}
+</script>

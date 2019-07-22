@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Enki demo</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+  <link rel="icon" href="/static/img/enki-lock-black.ico" type="image/x-icon">
+
+</head>
+
+<body>
+<div class="container">
+
+  <div class="row">
+    <div class="col-md-8">
+
+  <h1 class="display-2">Enki demo</h1>
+
+  <h2>Key links</h2>
+
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-5">
+    <ul class="key-links">
+        <li><a href="https://enki.{{zone}}" target="enki-frame" class=" enki-box enki-logo">Enki <span class="url">https://enki.{{zone}}</span></a></li>
+        <li><a href="https://bank-a.{{zone}}" target="bank-a-frame" class=" bank-a-box bank-logo">Bank A <span class="url">https://bank-a.{{zone}}</span></a></li>
+        <li><a href="https://bank-b.{{zone}}" target="bank-b-frame" class=" bank-b-box bank-logo">Bank B <span class="url">https://bank-b.{{zone}}</span></a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-10">
+
+
+  <h2>Introduction</h2>
+
+  <p>We are going to use a common client-onboarding journey to showcase Enki’s features.
+  You will need to complete an initial account setup process, and then connect the new client’s data to Enki and use
+  Enki to share the data with another institution.</p>
+
+  <p><strong>Pro tip</strong> since you'll be creating three accounts in the following process and you'll need to remember your username
+    and password for all three it helps to keep things simple. You don't need strong passwords and all the details for
+    all three can be the same.</p>
+
+  <section>
+    <div class="screenshot"><img src="../static/img/BankA-reg.png" height="150"></div>
+      <h4>Setup: create a customer of Bank A</h4>
+    <p>First create a user who has a bank account but no relationship with Enki</p>
+    <ol>
+      <li>Go to <a href="https://bank-a.{{zone}}/#/bank" class="bank-logo bank-a" target="bank-a-frame">Bank A</a>
+        and follow links to <strong>Open a bank account</strong>.
+      </li>
+      <li>Complete the registration process without doing any integration with Enki.
+        <br/>Please note the only required fields are username and password (you'll need to remember these), and
+        also first name, last name, email address and nationality. </li>
+      <li>Make sure you can <a href="https://bank-a.{{zone}}/#/login" class="bank-logo bank-a" target="bank-a-frame">log into Bank A</a>.</li>
+    </ol>
+    <p>Your sample customer, let's call her Alice, is ready now for use in the demo. We'll follow her as she links
+      her Bank A account with Enki, and then opens an account with another bank (perhaps she's investing or taking
+      out a mortgage). We'll see how Enki speeds up the process and provides assurance that personal information is
+      being handled securely and responsibly.
+  </section>
+
+    <h2>Customer demo script</h2>
+
+    <section>
+
+        <ol >
+          <h4>Step 1: Alice links her account with Enki</h4>
+          <div class="screenshot"><img src="../static/img/BankA-profile.png" height="150"></div>
+          <li>Visit the <a href="https://bank-a.{{zone}}/#/profile" class="bank-logo bank-a" target="bank-a-frame">Bank A profile</a> page,
+            sign in first, if necessary.</li>
+         <li>Click <span class="button-text">Connect</span> and then view confirmation message and note that the
+           connect button has been disabled.
+      <!--todo - explain what the status is of the data held by enki for someone without an enki account--></li>
+
+      <h4>Step 2: Alice opens an account with Enki and connects to Bank A</h4>
+        <div class="screenshot"><img src="../static/img/Enki-reg.png" height="150"></div>
+
+      <li>Alice <a href="https://enki.{{zone}}/register" class="enki-logo" target="enki-frame">registers with Enki</a>.</li>
+      <li>Alice <a href="https://enki.{{zone}}/login" class="enki-logo" target="enki-frame">logs in</a> and arrives at the Enki homepage.
+        She clicks <span class="button-text">Link with bank-a</span>.</li>
+      <li>Alice is taken to Bank A and prompted to sign in.</li>
+      <li>There she gives permission for Enki to view her data sharing agreements with Bank A and is then directed
+        back to the Enki homepage where the button for linking to Bank A is now disabled.</li>
+      <li>Alice visits the  <a href="https://enki.{{zone}}/#/profile-view" class="enki-logo" target="enki-frame">Enki dashboard</a>
+        tab after selecting Bank A she can see a summary of the personal information that it holds for her.</li>
+
+      <h4>Step 3: Alice users her Enki account while opening an account in Bank B</h4>
+
+      <li>Alice goes to <a href="https://bank-b.{{zone}}/" class="bank-logo bank-b" target="bank-b-frame">Bank B</a> and follows links to <strong>Open a bank account</strong></li>
+      <li>In the section first section of the form: <strong>In partnership with Enki</strong> she answers <span class="button-text">Yes</span></li>
+      <li>Alice confirms that she gives permission to Enki share her personal information with Bank B. She can choose to select
+        personal information she wants to import from which other PII holders (at this stage in the Demo that will only mean Bank A)</li>
+      <li>Alice is returned to the Bank B sign-up process which now is now displaying the imported personal information, she
+        completes the Bank B registration process.</li>
+      <li>When prompted to share her account with Enki she clicks <span class="button-text">Yes</span>, the transfer is confirmed
+        and she complete sign up.</li>
+      <li>Verify Alice can  <a href="https://bank-b..{{zone}}/#/login" class="bank-logo bank-b" target="bank-b-frame">log into Bank B</a>.</li>
+      <li>Visit the <a href="https://bank-b.{{zone}}/#/profile" class="bank-logo bank-b" target="bank-b-frame">Bank B profile</a>. The button to connect
+      the account with Enki should be disabled.</li>
+
+      <li>Alice now returns to <a href="https://enki.{{zone}}/register" class="enki-logo" target="enki-frame">Enki homepage</a>.
+        She clicks <span class="button-text">Link with bank-b</span>.</li>
+      <li>Alice is taken to Bank B and prompted to sign in.</li>
+      <li>She consents to share personal information held by Bank B with Enki and is redirected to Enki homepage.</li>
+      <li>Alice returns to the  <a href="https://enki.{{zone}}/#/profile-view" class="enki-logo" target="enki-frame">Enki dashboard</a>
+        tab after selecting Bank B she can see a summary of the personal information that it holds for her.</li>
+    </ol>
+  </section>
+
+
+    <h2>Admin demo</h2>
+    <section>
+      <ol>
+        <li>Go to <a href="https://enki.{{zone}}/" class="enki-logo" target="enki-frame">Enki</a>
+          make sure you're <strong>logged out</strong>.
+        </li>
+        <li>Log in with an admin account and you'll be redirected to the /overview page.
+          nb. The data here is hard coded and is just intended to illustrate an overview of consent management from a partner's point of view.</li>
+      </ol>
+    </section>
+</div>
+</div>
+
+</div>
+<div class="footer">
+  <div class="container">
+    For support for this Demo contact <a href="mailto:enki-questions@oliverwyman.com">enki-questions@oliverwyman.com</a>
+  </div>
+</div>
+
+<script src="/static/js/URI.js"></script>
+<script type="text/javascript">
+
+var ZONE = "{{zone}}";
+
+function isIE(userAgent) {
+  userAgent = userAgent || navigator.userAgent;
+  return userAgent.indexOf("MSIE ") > -1 || userAgent.indexOf("Trident/") > -1 || userAgent.indexOf("Edge/") > -1;
+}
+
+if (!isIE()) {
+  var elements = document.getElementsByClassName("ie");
+  for (var i = 0; i < elements.length; i++) {
+    elements[i].style.display = "none";
+  }
+}
+
+</script>
+
+<style type="text/css" media="screen, print">
+
+body {
+  background:#fff;
+  color: #777;
+}
+
+.footer {
+  margin-top: 30px;
+  padding-top: 15px;
+  padding-bottom: 30px;
+  background:#c6e8ea;
+  color: #1E8B9A;
+}
+.footer a:hover,
+.footer :active {
+  color: #1E8B9A;
+  background-color: #89D8E3;
+}
+
+
+
+/*
+TODO - add LESS processing
+enki
+@enki-l: #5DBFCD;
+@enki-h: #89D8E3;
+@enki-d: #3BA4B3;
+@enki-text: #1E8B9A;
+
+bank a
+@bank-main: #2E4DA9;
+@bank-highlight:#6C86D5;
+@bank-palest: #94A9E7;
+@bank-text: #2E4DA9;
+
+bank-b
+@bank-main: #23C03E;
+@bank-highlight:#64E17A;
+@bank-palest: #8EEE9F;
+@bank-text: #23C03E;
+
+enki
+*/
+
+
+.bank-logo:before {
+  font-family: 'Glyphicons halflings';
+  font-size: 85%;
+  content:"\e225";
+  margin-right: 0.4rem;
+}
+
+.bank-a {
+  color: #2E4DA9;
+}
+
+.bank-b {
+  color: #23C03E;
+}
+
+.enki-logo:before {
+  font-family: 'Glyphicons halflings';
+  font-size: 85%;
+  content:"\e033";
+  margin-right: 0.4rem;
+}
+
+.enki-logo {
+  color: #3BA4B3;
+}
+
+.enki-logo a {
+  color: #3BA4B3;
+  font-weight: bold;
+}
+
+h4{clear: both;}
+h2 {
+  margin-top: 10px;
+  color: #94A9E7;
+}
+a:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+.button-text {
+  font-weight: bold;
+  background-color: #fff;
+  padding-left: 3px;
+  padding-right: 3px;
+  color: #94A9E7;
+}
+
+section {
+  background-color: #efefef;
+  padding: 15px;
+  box-shadow: 0 5px 5px -5px #999999;
+}
+
+ol > h4 {
+  list-style: none;
+  margin-left: -30px;
+  margin-top: 10px;
+}
+
+.bank-a-box {
+  background: #e7eafc;
+  color: #2E4DA9;
+  box-shadow: 0 5px 5px -5px #6C86D5;
+}
+a.bank-a-box:hover,
+a.bank-a-box:active {
+  color: #2E4DA9;
+  background-color: #94A9E7;
+}
+
+.bank-b-box {
+  background:  #c7ecc7;
+  color: #23C03E;
+  box-shadow: 0 5px 5px -5px #23C03E;
+}
+a.bank-b-box:hover,
+a.bank-b-box:active {
+  color: #23C03E;
+  background-color: #8EEE9F;
+}
+
+.enki-box {
+  background:#c6e8ea;
+  color: #1E8B9A;
+  box-shadow: 0 5px 5px -5px #1e8b9a;
+}
+a.enki-box:hover,
+a.enki-box:active {
+  color: #1E8B9A;
+  background-color: #89D8E3;
+}
+
+img.demo-auth {
+  box-shadow: 0 5px 5px -5px #999999;
+}
+
+.key-links {
+  padding-left: 0;
+}
+
+.key-links li {
+  list-style-type: none;
+  display: block;
+  height: 50px;
+
+  box-shadow: 0 5px 5px -5px #999999;
+}
+.key-links li a {
+  list-style-type: none;
+  display: block;
+  height: 50px;
+  padding: 15px;
+}
+.key-links li a span{
+  clear: left;
+}
+
+
+.item {
+  cursor: pointer;
+  text-align: center;
+  vertical-align: middle;
+  padding-top: 25px;
+}
+
+.screenshot {
+  float: right;
+  display: none;
+}
+
+</style>
+</body>
+</html>

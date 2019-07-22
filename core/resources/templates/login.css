@@ -1,0 +1,119 @@
+/* Style definition for login and registration page */
+
+body {
+  margin: auto;
+}
+
+label {
+  margin: 4px 0px;
+  width: 35%;
+  min-width: 35%;
+}
+
+input {
+  margin: 4px 0px;
+}
+
+
+.input-block > input[type=checkbox] {
+  margin: 14px -3px;
+}
+
+.input-block {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  flex-wrap: nowrap;
+}
+
+.input-block > label {
+  flex: 1;
+}
+
+.input-block > input {
+  flex: 2;
+}
+
+
+.highlight-bg {
+  background: #FFFFFF;
+  max-width: 510px;
+}
+
+
+
+.header-image {
+  display: block;
+  max-width: 150px;
+  height: auto;
+  margin: auto;
+  text-align: center;
+}
+
+.form-signin {
+  margin: 0 auto;
+}
+
+.form-signin .checkbox {
+  font-weight: normal;
+}
+
+.form-signin .form-control {
+  position: relative;
+  height: auto;
+  padding: 8px;
+  -webkit-box-shadow: none;
+}
+
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+
+.form-control {
+  color: #5e5e5e;
+}
+
+.check-button-group {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  width: 100%;
+  height: auto;
+}
+
+body.bg {
+  background-color:@brand-primary;
+
+}
+
+.login-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  min-width: 350px;
+  border-radius: 12px;
+}
+
+.alert-container {
+  width: 100%;
+  padding: 0;
+  margin:0;
+}
+
+.alert {
+  margin: 0;
+  padding: 10px;
+  width: 100% !important;
+  height: auto;
+}
+
+.text-top {
+  margin: -4px 0px;
+  flex-grow: 1;
+}
+
+.btn-top-margin {
+  margin-top: 12px;
+}

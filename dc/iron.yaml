@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+  iron-bank:
+    image: enki/enki-iron-bank-web-ui:latest
+    external_links:
+      - hydra-enki
+      - hydra-iron-bank
+      - hydra-setup-iron-bank
+    environment:
+      - BANK_NAME=Iron Bank
+      - BANK_THEME=iron-bank
+      - ENKI_BACKCHANNEL_URL=http://localhost:3000
+      - ENKI_URL=http://localhost:3000
+      - ENKI_HYDRA_URL=http://localhost:5444
+      - ENKI_OAUTH_CLIENT_ID=iron-bank-client
+      - ENKI_OAUTH_CLIENT_SECRET=iron-bank-secret
+      - ENKI_OAUTH_CALLBACK=http://localhost:9003/signupcallback
+      - AGENT_URL=http://localhost:3030
+      - PORT=9003
+      - HYDRA_URL=http://localhost:4446
+    ports:
+      - 9003:9003
+  hydra-iron-bank:
+    image: oryd/hydra:v0.9.16-without-telemetry
+    environment:
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra-iron-bank?sslmode=disable
+      - FORCE_ROOT_CLIENT_CREDENTIALS=admin:demo-password
+      - ISSUER=http://localhost:4446
+      - SYSTEM_SECRET=y82XL-wAPCCZu+B4
+      - CONSENT_URL=http://localhost:9003/consent
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4446/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    ports:
+      - 4446:4444
+    external_links:
+      - dc_postgres_1
+      - dc_hydra-enki_1
+    # We don't have any pg-specific tools in the image, and
+    # Postgres accepts connections even whilst starting up, but rejects them.
+    # This is the best compromise I've found.
+    entrypoint: ['sh', '-xc', 'until /go/bin/hydra migrate sql "$$DATABASE_URL"; do sleep 1;done && /go/bin/hydra host --dangerous-force-http']
+  hydra-setup-iron-bank:
+    build:
+      context: scripts
+      dockerfile: Dockerfile-bank.hydra
+    environment:
+      - PARTNER_ID=iron-bank-client
+      - PARTNER_SECRET=iron-bank-secret
+      - PARTNER_CALLBACKS=http://localhost:9003/signupcallback
+      - PARTNER_INSTANCE=http://localhost:4446
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra-iron-bank?sslmode=disable
+      - INSTANCE=http://localhost:4446
+      - DOMAIN_NAME=test.demo
+      - ENKI_ONBOARD_ID=admin
+      - ENKI_ONBOARD_SECRET=demo-password
+      - ENKI_CONSUMER_ID=enki-consumer
+      - ENKI_CONSUMER_SECRET=enki-secret
+      - ENKI_CONSUMER_CALLBACKS=http://localhost:3000/linkacc/iron-bank/callback
+      - CORE_HYDRA_ADDR=http://localhost:5444
+    entrypoint: ['bash', '-xc', 'until curl -vsi "$$INSTANCE"; do sleep 30; done; /srv/configure-core-hydra.sh; /srv/onboard-partner-hydra.sh']
+    external_links:
+      - dc_postgres_1
+  iron-agent:
+    image: enki/agent:latest
+    external_links:
+      - dc_core_1
+      - dc_upspinserver_1
+      - dc_keyserver_1
+    entrypoint: bash -c "/srv/wait-for-it --timeout=60 upspinserver:8090 -- /srv/wait-for-it --timeout=60 core:3000 -- /srv/configure-upspin.sh && /srv/run.sh"
+    environment:
+      - ENKI_SERVER_URL=http://core:3000/
+      - BANK_NAME=iron-bank
+      - OAUTH_CLIENT_ID=iron-bank-client
+      - CONSUS_USER=test-agent3@test.labshift.io
+      - AGENT_URL=http://localhost:3030
+      - PORT=3030
+      - UPSPINSERVER_FQDN=upspinserver
+      - UPSPINSERVER_PORT=8090
+    ports:
+      - 3030:3030

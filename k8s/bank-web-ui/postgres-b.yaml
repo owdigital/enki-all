@@ -1,0 +1,130 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pg-bank-b-store
+  annotations:
+#    volume.beta.kubernetes.io/storage-class: "standard"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-bank-b-ns
+spec:
+  type: ClusterIP
+  clusterIP: None
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: pg-bank-b
+  annotations:
+    enki.services/git-version: "${BANK_UI_VERSION}"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  serviceName: pg-bank-b-ns
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pg-bank-b
+    spec:
+      initContainers:
+      - name: migrate
+        env:
+        - name: SHELLOPTS
+          value: xtrace
+        - name: PGDATA
+          value: /data/postgresql/data
+        image: busybox:1.28.0-musl
+        command:
+          - sh
+          - -xc
+          - |
+            parent=${PGDATA%/*}
+            find $parent -maxdepth 1 -mindepth 1 | while read x; do
+              n=${x##*/}
+              if [ "$n" != "data" ]; then
+                mv -v "$x" "$PGDATA"/
+              fi
+            done
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/data/postgresql"
+      - name: startup
+        env:
+        - name: POSTGRES_DB
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_MULTIPLE_DATABASES
+          value: hydra
+        - name: SHELLOPTS
+          value: xtrace
+        - name: PGDATA
+          value: /data/postgresql/data
+        image: ${REGISTRY}enki/postgres:${POSTGRES_VERSION}
+        command: ['docker-init.sh']
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/data/postgresql"
+      containers:
+      - name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_MULTIPLE_DATABASES
+          value: hydra
+        - name: PGDATA
+          value: /data/postgresql/data
+        image: ${REGISTRY}enki/postgres:${POSTGRES_VERSION}
+        readinessProbe:
+          exec:
+            command: ['sh', '-c', 'pg_isready -U postgres -h $(hostname -f)']
+        livenessProbe:
+          exec:
+            command: ['sh', '-c', 'pg_isready -U postgres -h $(hostname -f)']
+          failureThreshold: 3
+          periodSeconds: 30
+          timeoutSeconds: 30
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/data/postgresql"
+      restartPolicy: Always
+      volumes:
+        - name: efs-pvc
+          persistentVolumeClaim:
+            claimName: pg-bank-b-store
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-bank-b
+  labels:
+    app: pg-bank-b
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: pg-bank-b

@@ -1,0 +1,119 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bank-b-hydra
+  annotations:
+    enki.services/git-version: "${HYDRA_SETUP_VERSION}"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        app: bank-b-hydra
+    spec:
+      initContainers:
+      - name: await-postgres
+        image: postgres:9.6-alpine
+        command: ['sh', '-xc', 'until pg_isready -U postgres -h pg-bank-b -d hydra; do sleep 1; done']
+      - name: migrate
+        env:
+        - name: DISABLE_TELEMETRY
+          value: "1"
+        image: oryd/hydra:v0.9.16-without-telemetry
+        command: ['/go/bin/hydra', 'migrate', 'sql', 'postgres://postgres:postgres@pg-bank-b:5432/hydra?sslmode=disable']
+      containers:
+      - name: bank-b-hydra
+        env:
+        - name: DATABASE_URL
+          value: postgres://postgres:postgres@pg-bank-b:5432/hydra?sslmode=disable
+        - name: DISABLE_TELEMETRY
+          value: "1"
+        - name: FORCE_ROOT_CLIENT_CREDENTIALS
+          value: admin:demo-password
+        - name: ISSUER
+          value: https://hydra-b.${K8S_ZONE}/
+        - name: SYSTEM_SECRET
+          value: y82XL-wAPCCZu+B4
+        - name: CONSENT_URL
+          value: https://bank-b.${K8S_ZONE}/consent
+        - name: AUTH_CODE_LIFESPAN
+          value: 1h
+        - name: CHALLENGE_TOKEN_LIFESPAN
+          value: 1h
+        image: oryd/hydra:v0.9.16-without-telemetry
+        command:
+          - /go/bin/hydra
+          - host
+          - --dangerous-force-http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4444
+        ports:
+        - name: bank-b-hydra
+          containerPort: 4444
+        resources:
+          requests:
+            memory: "64Mi"
+          limits:
+            memory: "96Mi"
+      - name: hydra-setup
+        image: ${REGISTRY}enki/hydra-setup-bank:${HYDRA_SETUP_VERSION}
+        # Pause indefinitely once done.
+        command:
+          - bash
+          - -xce
+          - |
+              /srv/configure-bank-hydra.sh
+              /srv/setup-readiness-check.sh
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+        env:
+        - name: PARTNER_ID
+          value: bank-b-client
+        - name: PARTNER_SECRET
+          value: bank-b-secret
+        - name: PARTNER_CALLBACKS
+          value: https://bank-b.${K8S_ZONE}/signupcallback
+        - name: PARTNER_INSTANCE
+          value: http://localhost:4444 # Want internal access to the hydra instance, otherwise we get stuck in a boot loop
+        - name: DATABASE_URL
+          value: postgres://postgres:postgres@pg-bank-b:5432/hydra?sslmode=disable
+        - name: DISABLE_TELEMETRY
+          value: "1"
+        - name: INSTANCE
+          value: http://bank-b-hydra:4444
+        - name: DOMAIN_NAME
+          value: ${K8S_ZONE}
+        - name: ENKI_ONBOARD_ID
+          value: admin
+        - name: ENKI_ONBOARD_SECRET
+          value: demo-password
+        - name: ENKI_CONSUMER_ID
+          value: enki-consumer
+        - name: ENKI_CONSUMER_SECRET
+          value: enki-secret
+        - name: ENKI_CONSUMER_CALLBACKS
+          value: https://enki.${K8S_ZONE}/linkacc/bank-b/callback
+        - name: CORE_HYDRA_ADDR
+          value: http://hydra
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: bank-b-hydra
+spec:
+  selector:
+    app: bank-b-hydra
+  type: NodePort
+  ports:
+  - name: hydra-b-http
+    port: 80
+    targetPort: 4444
+    protocol: TCP
+

@@ -1,0 +1,169 @@
+version: '3'
+
+services:
+  postgres:
+    image: enki/postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_MULTIPLE_DATABASES=enki-core,hydra-bank-a,hydra-bank-b,hydra-enki,hydra-iron-bank
+    command: ["sh", "-c", "/usr/local/bin/docker-init.sh && exec /usr/local/bin/docker-entrypoint.sh postgres"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    ports:
+      - 5432:5432
+  hydra-bank-a:
+    image: oryd/hydra:v0.9.16-without-telemetry
+    environment:
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra-bank-a?sslmode=disable
+      - FORCE_ROOT_CLIENT_CREDENTIALS=admin:demo-password
+      - ISSUER=http://hydra-bank-a:4444
+      - SYSTEM_SECRET=y82XL-wAPCCZu+B4
+      - CONSENT_URL=http://localhost:9001/consent
+      - AUTH_CODE_LIFESPAN=1h
+      - CHALLENGE_TOKEN_LIFESPAN=1h
+    healthcheck:
+      test: ["CMD", "wget", "-s", "http://localhost:4444/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    ports:
+      - 4444:4444
+    links:
+      - postgres
+    # We don't have any pg-specific tools in the image, and
+    # Postgres accepts connections even whilst starting up, but rejects them.
+    # This is the best compromise I've found.
+    entrypoint: ['sh', '-xc', 'until /go/bin/hydra migrate sql "$$DATABASE_URL"; do sleep 1;done && /go/bin/hydra host --dangerous-force-http']
+  hydra-bank-b:
+    image: oryd/hydra:v0.9.16-without-telemetry
+    environment:
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra-bank-b?sslmode=disable
+      - FORCE_ROOT_CLIENT_CREDENTIALS=admin:demo-password
+      - ISSUER=http://hydra-bank-b:4444
+      - SYSTEM_SECRET=y82XL-wAPCCZu+B4
+      - CONSENT_URL=http://localhost:9002/consent
+      - AUTH_CODE_LIFESPAN=1h
+      - CHALLENGE_TOKEN_LIFESPAN=1h
+    healthcheck:
+      test: ["CMD", "wget", "-s", "http://localhost:4444/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    ports:
+      - 4445:4444
+    links:
+      - postgres
+    # We don't have any pg-specific tools in the image, and
+    # Postgres accepts connections even whilst starting up, but rejects them.
+    # This is the best compromise I've found.
+    entrypoint: ['sh', '-xc', 'until /go/bin/hydra migrate sql "$$DATABASE_URL"; do sleep 1;done && /go/bin/hydra host --dangerous-force-http']
+  hydra-setup-bank-a:
+    build:
+      context: scripts
+      dockerfile: Dockerfile-bank.hydra
+    environment:
+      - PARTNER_ID=bank-a-client
+      - PARTNER_SECRET=bank-a-secret
+      - PARTNER_CALLBACKS=http://localhost:9001/signupcallback
+      - PARTNER_INSTANCE=http://hydra-bank-a:4444
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra-bank-a?sslmode=disable
+      - INSTANCE=http://hydra-bank-a:4444
+      - DOMAIN_NAME=test.demo
+      - ENKI_ONBOARD_ID=admin
+      - ENKI_ONBOARD_SECRET=demo-password
+      - ENKI_CONSUMER_ID=enki-consumer
+      - ENKI_CONSUMER_SECRET=enki-secret
+      - ENKI_CONSUMER_CALLBACKS=http://localhost:3000/linkacc/bank-a/callback
+      - CORE_HYDRA_ADDR=http://hydra-enki:4444
+    entrypoint:  ['bash', '-xc', '/srv/configure-core-hydra.sh && /srv/onboard-partner-hydra.sh']
+    links:
+      - postgres
+      - hydra-bank-a
+  hydra-setup-bank-b:
+    build:
+      context: scripts
+      dockerfile: Dockerfile-bank.hydra
+    environment:
+      - PARTNER_ID=bank-b-client
+      - PARTNER_SECRET=bank-b-secret
+      - PARTNER_CALLBACKS=http://localhost:9002/signupcallback
+      - PARTNER_INSTANCE=http://hydra-bank-b:4444
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra-bank-b?sslmode=disable
+      - INSTANCE=http://hydra-bank-b:4444
+      - DOMAIN_NAME=test.demo
+      - ENKI_ONBOARD_ID=admin
+      - ENKI_ONBOARD_SECRET=demo-password
+      - ENKI_CONSUMER_ID=enki-consumer
+      - ENKI_CONSUMER_SECRET=enki-secret
+      - ENKI_CONSUMER_CALLBACKS=http://localhost:3000/linkacc/bank-b/callback
+      - CORE_HYDRA_ADDR=http://hydra-enki:4444
+    entrypoint:  ['bash', '-xc', '/srv/configure-core-hydra.sh && /srv/onboard-partner-hydra.sh']
+    links:
+      - postgres
+      - hydra-bank-b
+  hydra-enki:
+    image: oryd/hydra:v0.9.16-without-telemetry
+    environment:
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra-enki?sslmode=disable
+      - FORCE_ROOT_CLIENT_CREDENTIALS=admin:demo-password
+      - ISSUER=http://hydra-enki:4444
+      - SYSTEM_SECRET=y82XL-wAPCCZu+B4
+      - CONSENT_URL=http://localhost:3000/consent
+    healthcheck:
+      test: ["CMD", "wget", "-s", "http://localhost:4444/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    ports:
+      - 5444:4444
+    links:
+      - postgres
+    # We don't have any pg-specific tools in the image, and
+    # Postgres accepts connections even whilst starting up, but rejects them.
+    # This is the best compromise I've found.
+    entrypoint: ['sh', '-xc', 'until /go/bin/hydra migrate sql "$$DATABASE_URL"; do sleep 1; done && /go/bin/hydra host --dangerous-force-http']
+  hydra-setup-enki:
+    build:
+      context: scripts
+      dockerfile: Dockerfile-enki.hydra
+    environment:
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra-enki?sslmode=disable
+      - INSTANCE=http://hydra-enki:4444
+      - DOMAIN_NAME=test.demo
+    entrypoint: ['bash', '-xc', '/srv/configure-core-hydra.sh && /srv/configure-enki-hydra.sh']
+    links:
+      - postgres
+      - hydra-enki
+  keyserver:
+    image: enki/upspin-keyserver
+    environment:
+      - KEYSERVER_FQDN=keyserver
+      - UPSPINSERVER_FQDN=upspinserver
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8070/log"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+  upspinserver:
+    image: enki/upspin-server
+    links:
+      - keyserver
+    environment:
+      - KEYSERVER_FQDN=keyserver
+      - UPSPINSERVER_FQDN=upspinserver
+      - EXTRA_CONSUS_WRITERS=test-agent1@test.labshift.io test-agent2@test.labshift.io test-agent3@test.labshift.io
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "8090"]
+      interval: 5s
+      timeout: 10s
+      retries: 3

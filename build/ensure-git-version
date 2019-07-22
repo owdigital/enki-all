@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e -o nounset -o pipefail
+
+IMAGE_TAG=$1
+VERSION_STAMP=$2
+
+mkdir -vp "${VERSION_STAMP%/*}"
+printf "%s" ${IMAGE_TAG} > ${VERSION_STAMP}.tmp
+if [ -f ${VERSION_STAMP} ] && cmp -s ${VERSION_STAMP}.tmp ${VERSION_STAMP} ; then
+	rm -f ${VERSION_STAMP}.tmp
+else
+	mv -v ${VERSION_STAMP}.tmp ${VERSION_STAMP}
+fi

@@ -1,0 +1,41 @@
+#!/bin/bash
+set -e -o nounset -o pipefail
+
+DEFAULT_ZONE=temp-enki.labshift.io
+DEFAULT_REGISTRY=286982628803.dkr.ecr.eu-central-1.amazonaws.com/enki/postgres
+registry=${REGISTRY:-$DEFAULT_REGISTRY}
+KUBECTL=kubectl
+if [ ! -z "${K8S_CONTEXT:-}" ]; then
+  KUBECTL="$KUBECTL --context $K8S_CONTEXT"
+fi
+
+usage() {
+  echo "Usage: $0: k8s-namespace"
+}
+
+shift $((OPTIND-1))
+
+if [ $# -ne 1 ]; then
+  usage
+  exit 1
+fi
+
+namespace=$1
+
+$KUBECTL --namespace ${namespace} get service/bank-a-web-ui --output=yaml
+$KUBECTL --namespace ${namespace} get ing/bank-ingress --output=yaml
+
+function get_lb() {
+  $KUBECTL --namespace ${namespace} get ing/bank-ingress -o 'jsonpath={.status.loadBalancer.ingress[*].hostname}'
+}
+
+lb=''
+deadline=$(date -d 'now + 2 minute' +%s)
+while [ -z "$lb" -a "$(date +%s)" -lt "$deadline" ]; do
+  sleep 1;
+  lb=$(get_lb)
+done
+
+echo "Your environment will be accessible via the following hostnames:"
+$KUBECTL --namespace ${namespace} get ing/bank-ingress --output=jsonpath='{.spec.rules[*].host}{"\n"}'
+echo "Assuming you have added CNAMES to: $lb"

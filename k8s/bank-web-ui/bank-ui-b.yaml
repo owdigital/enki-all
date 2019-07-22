@@ -1,0 +1,99 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: bank-b-ui-store
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bank-b-ui-ns
+spec:
+  type: ClusterIP
+  clusterIP: None
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: bank-b-web-ui
+  annotations:
+    enki.services/git-version: "${BANK_UI_VERSION}"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  serviceName: bank-b-ui-ns
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: bank-b-web-ui
+    spec:
+      containers:
+      - name: bank-b-web-ui
+        image: ${REGISTRY}enki/bank-b-web-ui:${BANK_UI_VERSION}
+        env:
+        - name: ENKI_OAUTH_CALLBACK
+          value: https://bank-b.${K8S_ZONE}/signupcallback
+        - name: ENKI_HYDRA_URL
+          value: https://hydra.${K8S_ZONE}/
+        - name: ENKI_OAUTH_CLIENT_ID
+          value: bank-b-client
+        - name: ENKI_OAUTH_CLIENT_SECRET
+          value: bank-b-secret
+        - name: BANK_NAME
+          value: Bank B
+        - name: BANK_THEME
+          value: bank-b
+        - name: ENKI_URL
+          value: http://enki.${K8S_ZONE}/
+        - name: ENKI_BACKCHANNEL_URL
+          value: http://enki-core/
+        - name: AGENT_URL
+          value: http://bank-b-agent
+        - name: HYDRA_URL
+          value: https://hydra-b.${K8S_ZONE}/
+        - name: HYDRA_CLIENT_ID
+          value: consent-app
+        - name: HYDRA_CLIENT_SECRET
+          value: consent-secret
+        readinessProbe:
+          httpGet:
+            path: /builds/build-manifest.json # Not used elsewhere, but we use it here as it's a non-hashed name
+            port: 80
+        ports:
+        - name: bank-b-web-ui
+          containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/enki-bank-web-ui/server/db"
+      restartPolicy: Always
+      volumes:
+        - name: efs-pvc
+          persistentVolumeClaim:
+            claimName: bank-b-ui-store
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: bank-b-web-ui
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: bank-b-web-ui
+    protocol: TCP
+  selector:
+    app: bank-b-web-ui

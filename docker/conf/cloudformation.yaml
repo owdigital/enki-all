@@ -1,0 +1,353 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AWS CloudFormation template to create a new VPC
+  or use an existing VPC for ECS deployment
+  in Create Cluster Wizard. Requires exactly 1
+  Instance Types for a Spot Request.
+Parameters:
+  EcsClusterName:
+    Type: String
+    Description: >
+      Specifies the ECS Cluster Name with which the resources would be
+      associated
+    Default: default
+  EcsAmiId:
+    Type: String
+    Description: Specifies the AMI ID for your container instances.
+  EcsInstanceType:
+    Type: CommaDelimitedList
+    Description: >
+      Specifies the EC2 instance type for your container instances.
+      Defaults to m4.large
+    Default: m4.large
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Type: String
+    Description: >
+      Optional - Specifies the name of an existing Amazon EC2 key pair
+      to enable SSH access to the EC2 instances in your cluster.
+    Default: ''
+  VpcId:
+    Type: String
+    Description: >
+      Optional - Specifies the ID of an existing VPC in which to launch
+      your container instances. If you specify a VPC ID, you must specify a list of
+      existing subnets in that VPC. If you do not specify a VPC ID, a new VPC is created
+      with at least 1 subnet.
+    Default: ''
+    AllowedPattern: "^(?:vpc-[0-9a-f]{8}|)$"
+    ConstraintDescription: >
+      VPC Id must begin with 'vpc-' or leave blank to have a
+      new VPC created
+  SubnetIds:
+    Type: CommaDelimitedList
+    Description: >
+      Optional - Specifies the Comma separated list of existing VPC Subnet
+      Ids where ECS instances will run
+    Default: ''
+  SecurityGroupId:
+    Type: String
+    Description: >
+      Optional - Specifies the Security Group Id of an existing Security
+      Group. Leave blank to have a new Security Group created
+    Default: ''
+  VpcCidr:
+    Type: String
+    Description: Optional - Specifies the CIDR Block of VPC
+    Default: ''
+  SubnetCidr1:
+    Type: String
+    Description: Specifies the CIDR Block of Subnet 1
+    Default: ''
+  SubnetCidr2:
+    Type: String
+    Description: Specifies the CIDR Block of Subnet 2
+    Default: ''
+  SubnetCidr3:
+    Type: String
+    Description: Specifies the CIDR Block of Subnet 3
+    Default: ''
+  AsgMaxSize:
+    Type: Number
+    Description: >
+      Specifies the number of instances to launch and register to the cluster.
+      Defaults to 1.
+    Default: '1'
+  IamRoleInstanceProfile:
+    Type: String
+    Description: >
+      Specifies the Name or the Amazon Resource Name (ARN) of the instance
+      profile associated with the IAM role for the instance
+  SecurityIngressFromPort:
+    Type: Number
+    Description: >
+      Optional - Specifies the Start of Security Group port to open on
+      ECS instances - defaults to port 0
+    Default: '0'
+  SecurityIngressToPort:
+    Type: Number
+    Description: >
+      Optional - Specifies the End of Security Group port to open on ECS
+      instances - defaults to port 65535
+    Default: '65535'
+  SecurityIngressCidrIp:
+    Type: String
+    Description: >
+      Optional - Specifies the CIDR/IP range for Security Ports - defaults
+      to 0.0.0.0/0
+    Default: 0.0.0.0/0
+  EcsEndpoint:
+    Type: String
+    Description: >
+      Optional - Specifies the ECS Endpoint for the ECS Agent to connect to
+    Default: ''
+  VpcAvailabilityZones:
+    Type: CommaDelimitedList
+    Description: >
+      Specifies a comma-separated list of 3 VPC Availability Zones for
+      the creation of new subnets. These zones must have the available status.
+    Default: ''
+  IamSpotFleetRoleName:
+    Type: String
+    Default: ''
+  SpotPrice:
+    Type: Number
+    Default: '0'
+  SpotAllocationStrategy:
+    Type: String
+    Default: 'diversified'
+    AllowedValues:
+      - 'lowestPrice'
+      - 'diversified'
+Conditions:
+  CreateEC2LCWithKeyPair:
+    !Not [!Equals [!Ref KeyName, '']]
+  SetEndpointToECSAgent:
+    !Not [!Equals [!Ref EcsEndpoint, '']]
+  CreateNewSecurityGroup:
+    !Equals [!Ref SecurityGroupId, '']
+  CreateNewVpc:
+    !Equals [!Ref VpcId, '']
+  CreateSubnet1: !And
+    - !Not [!Equals [!Ref SubnetCidr1, '']]
+    - !Condition CreateNewVpc
+  CreateSubnet2: !And
+    - !Not [!Equals [!Ref SubnetCidr2, '']]
+    - !Condition CreateSubnet1
+  CreateSubnet3: !And
+    - !Not [!Equals [!Ref SubnetCidr3, '']]
+    - !Condition CreateSubnet2
+Resources:
+  Vpc:
+    Condition: CreateSubnet1
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+  PubSubnetAz1:
+    Condition: CreateSubnet1
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetCidr1
+      AvailabilityZone: !Select [ 0, !Ref VpcAvailabilityZones ]
+      MapPublicIpOnLaunch: true
+  PubSubnetAz2:
+    Condition: CreateSubnet2
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetCidr2
+      AvailabilityZone: !Select [ 1, !Ref VpcAvailabilityZones ]
+      MapPublicIpOnLaunch: true
+  PubSubnetAz3:
+    Condition: CreateSubnet3
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: !Ref SubnetCidr3
+      AvailabilityZone: !Select [ 2, !Ref VpcAvailabilityZones ]
+      MapPublicIpOnLaunch: true
+  InternetGateway:
+    Condition: CreateSubnet1
+    Type: AWS::EC2::InternetGateway
+  AttachGateway:
+    Condition: CreateSubnet1
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+  RouteViaIgw:
+    Condition: CreateSubnet1
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+  PublicRouteViaIgw:
+    Condition: CreateSubnet1
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref RouteViaIgw
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PubSubnet1RouteTableAssociation:
+    Condition: CreateSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PubSubnetAz1
+      RouteTableId: !Ref RouteViaIgw
+  PubSubnet2RouteTableAssociation:
+    Condition: CreateSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PubSubnetAz2
+      RouteTableId: !Ref RouteViaIgw
+  PubSubnet3RouteTableAssociation:
+    Condition: CreateSubnet3
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PubSubnetAz3
+      RouteTableId: !Ref RouteViaIgw
+  EcsSecurityGroup:
+    Condition: CreateNewSecurityGroup
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS Allowed Ports
+      VpcId: !If [ CreateSubnet1, !Ref Vpc, !Ref VpcId ]
+      SecurityGroupIngress:
+        IpProtocol: tcp
+        FromPort: !Ref SecurityIngressFromPort
+        ToPort: !Ref SecurityIngressToPort
+        CidrIp: !Ref SecurityIngressCidrIp
+  EcsSpotFleet:
+    Type: AWS::EC2::SpotFleet
+    Properties:
+      SpotFleetRequestConfigData:
+        AllocationStrategy: !Ref SpotAllocationStrategy
+        IamFleetRole: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${IamSpotFleetRoleName}'
+        TargetCapacity: !Ref AsgMaxSize
+        SpotPrice: !Ref SpotPrice
+        TerminateInstancesWithExpiration: true
+        LaunchSpecifications:
+            -
+              IamInstanceProfile:
+                Arn: !Sub 'arn:aws:iam::${AWS::AccountId}:instance-profile/${IamRoleInstanceProfile}'
+              ImageId: !Ref EcsAmiId
+              InstanceType: !Select [ 0, !Ref EcsInstanceType ]
+              KeyName: !If [ CreateEC2LCWithKeyPair, !Ref KeyName, !Ref "AWS::NoValue" ]
+              Monitoring:
+                Enabled: true
+              SecurityGroups:
+                - GroupId: !If [ CreateNewSecurityGroup, !Ref EcsSecurityGroup, !Ref SecurityGroupId ]
+              SubnetId: !If
+                      - CreateSubnet1
+                      - !If
+                        - CreateSubnet2
+                        - !If
+                          - CreateSubnet3
+                          - !Join [ "," , [ !Ref PubSubnetAz1, !Ref PubSubnetAz2, !Ref PubSubnetAz3 ] ]
+                          - !Join [ "," , [ !Ref PubSubnetAz1, !Ref PubSubnetAz2 ] ]
+                        - !Ref PubSubnetAz1
+                      - !Join [ "," , !Ref SubnetIds ]
+              BlockDeviceMappings:
+                        - DeviceName: "/dev/xvda"
+                          Ebs:
+                           VolumeSize: "1024"
+                           VolumeType: "gp2"
+                           DeleteOnTermination: true
+                        # This is used for Jenkins workspace caches.
+                        - DeviceName: "/dev/xvdj"
+                          Ebs:
+                           VolumeSize: "128"
+                           VolumeType: "gp2"
+              UserData:
+                    Fn::Base64: !Sub |
+                                  #!/bin/bash -x
+                                  echo ECS_CLUSTER=${EcsClusterName} >> /etc/ecs/ecs.config
+                                  if [ "${EcsEndpoint}" != "" ]; then
+                                    echo ECS_BACKEND_HOST=${EcsEndpoint} >> /etc/ecs/ecs.config
+                                  fi
+                                  cat >> /etc/ecs/ecs.config <<'EOF'
+                                  ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=30m
+                                  ECS_IMAGE_CLEANUP_INTERVAL=10m
+                                  ECS_NUM_IMAGES_DELETE_PER_CYCLE=20
+                                  EOF
+                                  echo 'DOCKER_STORAGE_OPTIONS="--storage-driver=overlay2"' > /etc/sysconfig/docker-storage
+                                  stop ecs
+                                  /etc/init.d/docker stop
+                                  /etc/init.d/docker start
+                                  start ecs
+                                  export PATH=/usr/local/bin:$PATH
+                                  yum -y install jq
+                                  easy_install pip
+                                  pip install awscli
+                                  aws configure set default.region ${AWS::Region}
+                                  cat <<EOF > /etc/init/spot-instance-termination-notice-handler.conf
+                                  description "Start spot instance termination handler monitoring script"
+                                  author "Amazon Web Services"
+                                  start on started ecs
+                                  script
+                                  echo \$\$ > /var/run/spot-instance-termination-notice-handler.pid
+                                  exec /usr/local/bin/spot-instance-termination-notice-handler.sh
+                                  end script
+                                  pre-start script
+                                  logger "[spot-instance-termination-notice-handler.sh]: spot instance termination
+                                  notice handler started"
+                                  end script
+                                  EOF
+                                  cat <<EOF > /usr/local/bin/spot-instance-termination-notice-handler.sh
+                                  #!/bin/bash
+                                  while sleep 5; do
+                                  if [ -z \$(curl -Isf http://169.254.169.254/latest/meta-data/spot/termination-time)]; then
+                                  /bin/false
+                                  else
+                                  logger "[spot-instance-termination-notice-handler.sh]: spot instance termination notice detected"
+                                  STATUS=DRAINING
+                                  ECS_CLUSTER=\$(curl -s http://localhost:51678/v1/metadata | jq .Cluster | tr -d \")
+                                  CONTAINER_INSTANCE=\$(curl -s http://localhost:51678/v1/metadata | jq .ContainerInstanceArn | tr -d \")
+                                  logger "[spot-instance-termination-notice-handler.sh]: putting instance in state \$STATUS"
+
+                                  if [ "${EcsEndpoint}" != "" ]; then
+                                      /usr/local/bin/aws --endpoint-url https://${EcsEndpoint} ecs update-container-instances-state --cluster \$ECS_CLUSTER --container-instances \$CONTAINER_INSTANCE --status \$STATUS
+                                  else
+                                      /usr/local/bin/aws ecs update-container-instances-state --cluster \$ECS_CLUSTER --container-instances \$CONTAINER_INSTANCE --status \$STATUS
+                                  fi
+
+                                  logger "[spot-instance-termination-notice-handler.sh]: putting myself to sleep..."
+                                  sleep 120 # exit loop as instance expires in 120 secs after terminating notification
+                                  fi
+                                  done
+                                  EOF
+                                  chmod +x /usr/local/bin/spot-instance-termination-notice-handler.sh
+                                  yum install -y nfs-utils
+                                  mkdir -vp /mnt/{m2,enki-labskit-cache,jenkins}
+                                  echo 'fs-3aa44263.efs.eu-central-1.amazonaws.com:/ /mnt/m2 nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0' >> /etc/fstab
+                                  echo 'fs-073adc5e.efs.eu-central-1.amazonaws.com:/ /mnt/enki-labskit-cache nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0' >> /etc/fstab
+                                  mount /mnt/m2
+                                  mount /mnt/enki-labskit-cache
+                                  mkdir -vp /srv/jenkins
+                                  set -o pipefail
+                                  if ! file -b -s "/dev/xvdj" | fgrep -q "filesystem data"; then
+                                    mkfs -t ext4 /dev/xvdj
+                                  fi
+                                  if ! grep "^/dev/xvdj" /etc/fstab; then
+                                    echo '/dev/xvdj /mnt/jenkins ext4 defaults 0 0' >> /etc/fstab
+                                  fi
+                                  mount /mnt/jenkins
+                                  install -d /mnt/jenkins/workspace -o 1000 -g 996
+                                  ln -s /mnt/m2/ /srv/jenkins/.m2
+                                  cat > /etc/cron.d/docker-cleanup <<'EOF'
+                                  0 0 * * * docker system prune -f; docker volume prune -f
+                                  0 3 * * * docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -e GRACE_PERIOD_SECONDS=86400 spotify/docker-gc
+                                  EOF
+Outputs:
+  EcsSpotFleetRequestId:
+      Description: Spot Fleet Request for ECS Instances
+      Value: !Ref EcsSpotFleet
+  UsedByECSCreateCluster:
+    Description: Flag used by EC2 Container Service Create Cluster Wizard
+    Value: 'true'
+  TemplateVersion:
+    Description: The version of the template used by Create Cluster Wizard
+    Value: '1.0.0'

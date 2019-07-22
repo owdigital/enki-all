@@ -1,0 +1,152 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: bank-b-agent-store
+  annotations:
+#    volume.beta.kubernetes.io/storage-class: "standard"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: bank-b-agent
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: bank-agent
+    protocol: TCP
+  selector:
+    app: bank-b-agent
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: bank-b-agent
+  annotations:
+    enki.services/git-version: "${BANK_UI_VERSION}"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  serviceName: bank-b-agent
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: bank-b-agent
+    spec:
+      initContainers:
+      - name: setup
+        env:
+        - name: SHELLOPTS
+          value: xtrace
+        image: busybox:1.28.0-musl
+        command:
+          - sh
+          - -xec
+          # Chown to jenkins:jenkins
+          - mkdir -p /data/agent/upspin && chown -R 1000:996 /data/agent
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/data/agent"
+      - name: await-enki-core
+        image: appropriate/curl
+        command: ['sh', '-xc', 'until curl -v http://enki-core/api/healthcheck; do sleep 1; done']
+      - name: await-upspinserver
+        image: subfuzion/netcat
+        command: ['sh', '-xc', 'until nc -vz upspinserver 8090; do sleep 1; done']
+      - name: ensure-key
+        image: ${REGISTRY}enki/agent:${AGENT_VERSION}
+        env:
+        - name: ENKI_SERVER_URL
+          value: http://enki-core/
+        - name: BANK_NAME
+          value: bank-b
+        - name: CONSUS_USER
+          value: test-agent2@test.labshift.io
+        - name: CONSUS_CONFIG
+          value: /data/agent
+        - name: AGENT_URL
+          value: http://bank-b-agent/
+        - name: OAUTH_CLIENT_ID
+          value: bank-b-client
+        - name: UPSPINSERVER_FQDN
+          value: consus-upspinserver
+        - name: UPSPINSERVER_PORT
+          value: "8090"
+        command:
+          - sh
+          - -xec
+          - |
+            cd ${CONSUS_CONFIG}
+            if [ ! -f ${CONSUS_CONFIG}/sign.key ]; then
+            java -jar -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap /srv/target/uberjar/enki-agent.jar new-signing-key ${CONSUS_CONFIG}/sign.key
+            fi
+        volumeMounts:
+        - name: efs-pvc
+          mountPath: /data/agent
+      - name: config-upspin
+        image: ${REGISTRY}enki/agent:${AGENT_VERSION}
+        command: ["sh", "-xc", "/srv/configure-upspin.sh"]
+        env:
+        - name: UPSPINSERVER_FQDN
+          value: consus-upspinserver
+        - name: UPSPINSERVER_PORT
+          value: "8090"
+        - name: CONSUS_USER
+          value: test-agent2@test.labshift.io
+        - name: CONSUS_CONFIG
+          value: /data/agent
+        volumeMounts:
+        - name: efs-pvc
+          mountPath: /data/agent
+      containers:
+      - name: bank-agent
+        image: ${REGISTRY}enki/agent:${AGENT_VERSION}
+        env:
+        - name: ENKI_SERVER_URL
+          value: http://enki-core/
+        - name: BANK_NAME
+          value: bank-b
+        - name: CONSUS_USER
+          value: test-agent2@test.labshift.io
+        - name: CONSUS_CONFIG
+          value: /data/agent
+        - name: AGENT_URL
+          value: http://bank-b-agent/
+        - name: OAUTH_CLIENT_ID
+          value: bank-b-client
+        - name: UPSPINSERVER_FQDN
+          value: consus-upspinserver
+        - name: UPSPINSERVER_PORT
+          value: "8090"
+        command: ["sh", "-xc", "cd /data/agent && /srv/run.sh"]
+        volumeMounts:
+          - name: efs-pvc
+            # "$HOME"
+            mountPath: "/data/agent"
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 3010
+        ports:
+        - name: bank-agent
+          containerPort: 3010
+        resources:
+          requests:
+            memory: "192Mi"
+          limits:
+            memory: "256Mi"
+      restartPolicy: Always
+      volumes:
+        - name: efs-pvc
+          persistentVolumeClaim:
+            claimName: bank-b-agent-store

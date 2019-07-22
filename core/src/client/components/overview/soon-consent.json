@@ -1,0 +1,226 @@
+[
+  {
+    "AccountNumber": "1233BCD",
+    "Product": "Savings",
+    "ExpiryDate": "05 December 2016",
+    "FieldsCount": 5,
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "1",
+        "date": "08 September 2016",
+        "activity": "Attempted to contact customer",
+        "comments": []
+      },
+      {
+        "eventID": "2",
+        "date": "25 September 2016",
+        "activity": "Attempted to trace customer",
+        "comments": []
+      },
+      {
+        "eventID": "3",
+        "date": "30 November 2016",
+        "activity": "Attempted to contact customer's next of kin",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "7889xyz",
+    "Product": "Savings",
+    "ExpiryDate": "07 June 2017",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address",
+      "Postcode",
+      "Date of birth"
+    ],
+    "Area": "Asia",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "4",
+        "date": "08 May 2017",
+        "activity": "Attempted to contact customer",
+        "comments": []
+      },
+      {
+        "eventID": "5",
+        "date": "25 May 2017",
+        "activity": "Attempted to trace customer",
+        "comments": []
+      },
+      {
+        "eventID": "6",
+        "date": "30 May 2017",
+        "activity": "Attempted to contact customer's next of kin",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "4324fds",
+    "Product": "Savings",
+    "ExpiryDate": "12 June 2018",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address",
+      "Postcode",
+      "Marital status"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "7",
+        "date": "08 May 2018",
+        "activity": "Attempted to contact customer",
+        "comments": []
+      },
+      {
+        "eventID": "8",
+        "date": "25 May 2018",
+        "activity": "Attempted to trace customer",
+        "comments": []
+      },
+      {
+        "eventID": "9",
+        "date": "30 May 2018",
+        "activity": "Attempted to contact customer's next of kin",
+        "comments": []
+      },
+      {
+        "eventID": "10",
+        "date": "03 June 2018",
+        "activity": "PII flagged for deletion",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "4434tds",
+    "Product": "Savings",
+    "ExpiryDate": "12 June 2018",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address",
+      "Telephone number",
+      "Place of birth",
+      "Mothers maiden name"
+    ],
+    "Area": "North America",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "11",
+        "date": "08 May 2018",
+        "activity": "Attempted to contact customer",
+        "comments": []
+      },
+      {
+        "eventID": "12",
+        "date": "25 May 2018",
+        "activity": "Attempted to trace customer",
+        "comments": []
+      },
+      {
+        "eventID": "13",
+        "date": "30 May 2018",
+        "activity": "Attempted to contact customer's next of kin",
+        "comments": []
+      },
+      {
+        "eventID": "14",
+        "date": "03 June 2018",
+        "activity": "PII flagged for deletion",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "4454tds",
+    "Product": "Savings",
+    "ExpiryDate": "1 December 2017",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "15",
+        "date": "08 May 2017",
+        "activity": "Attempted to contact customer",
+        "comments": []
+      },
+      {
+        "eventID": "16",
+        "date": "25 May 2017",
+        "activity": "Attempted to trace customer",
+        "comments": []
+      },
+      {
+        "eventID": "17",
+        "date": "30 May 2017",
+        "activity": "Attempted to contact customer's next of kin",
+        "comments": []
+      },
+      {
+        "eventID": "18",
+        "date": "03 June 2017",
+        "activity": "PII flagged for deletion",
+        "comments": []
+      }
+    ]
+  },
+  {
+    "AccountNumber": "4324tdfr",
+    "Product": "Savings",
+    "ExpiryDate": "22 October 2016",
+    "Fields": [
+      "Firstname",
+      "Surname",
+      "Address"
+    ],
+    "Area": "Europe",
+    "Contact": "Email",
+    "Log": [
+      {
+        "eventID": "19",
+        "date": "08 May 2016",
+        "activity": "Attempted to contact customer",
+        "comments": []
+      },
+      {
+        "eventID": "20",
+        "date": "25 May 2016",
+        "activity": "Attempted to trace customer",
+        "comments": []
+      },
+      {
+        "eventID": "21",
+        "date": "30 May 2016",
+        "activity": "Attempted to contact customer's next of kin",
+        "comments": []
+      },
+      {
+        "eventID": "22",
+        "date": "03 June 2016",
+        "activity": "PII flagged for deletion",
+        "comments": []
+      }
+    ]
+  }
+]

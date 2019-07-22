@@ -1,0 +1,69 @@
+#!/bin/bash
+set -e -o nounset -o pipefail
+
+DEFAULT_ZONE=k8s.local
+DEFAULT_REGISTRY=
+registry=${REGISTRY:-$DEFAULT_REGISTRY}
+
+usage() {
+  echo "Usage: $0: [ -f output.yaml ] [ -z dns-zone ] core-tag postgres-tag hydra-tag"
+  echo "  -z		  DNS Zone to use (defaults to $DEFAULT_ZONE)"
+  echo "  -f output.yaml  Write output yaml to ‘output.yaml’"
+}
+
+workdir=$(mktemp -d)
+deploy_config="${workdir}/deploy.yaml"
+zone=''
+dir=${0%/*}
+files=(${dir}/*.yaml)
+
+while getopts "hf:z:" o; do
+  case "$o" in
+    f)
+      deploy_config="$OPTARG"
+      ;;
+    z)
+      zone="$OPTARG"
+      ;;
+    h):
+      usage
+      exit 0
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+if [ $# -lt 3 ]; then
+  usage
+  exit 1
+elif [ $# -gt 3 ]; then
+  files=(${@:4})
+fi
+
+core_tag=$1
+postgres_tag=$2
+hydra_tag=$3
+
+if [ -z "$zone" ]; then
+  echo 1>&1 "-z not specified, using $DEFAULT_ZONE"
+  zone=$DEFAULT_ZONE
+fi
+
+tmpf=$(mktemp "$workdir/.joined.XXXXXXXX")
+
+for f in ${files[@]}; do
+# Munge in the correct image versions
+  echo "---"
+  env \
+    "ENKI_CORE_VERSION=${core_tag}" \
+    "POSTGRES_VERSION=${postgres_tag}" \
+    "HYDRA_SETUP_VERSION=${hydra_tag}" \
+    "REGISTRY=${registry}" \
+    "K8S_ZONE=${zone}" \
+    envsubst < "$f" '$AGENT_VERSION $BANK_UI_VERSION $DEMO_SUITE_VERSION $ENKI_CORE_VERSION $POSTGRES_VERSION $HYDRA_SETUP_VERSION $K8S_ZONE $REGISTRY'
+done > "$tmpf"
+
+mv "$tmpf" "$deploy_config"
+
+echo "$deploy_config"

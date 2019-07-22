@@ -1,0 +1,108 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: consus-upspinserver-store
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: upspinserver
+spec:
+  type: ClusterIP
+  ports:
+  - name: upspinserver
+    port: 8090
+    targetPort: 8090
+    protocol: TCP
+  selector:
+    app: consus-upspinserver
+---
+## TODO: We are terrible peep.
+kind: Service
+apiVersion: v1
+metadata:
+  name: consus-upspinserver
+spec:
+  type: ClusterIP
+  ports:
+  - name: consus-upspinserver
+    port: 8090
+    targetPort: 8090
+    protocol: TCP
+  selector:
+    app: consus-upspinserver
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: consus-upspinserver
+  annotations:
+    enki.services/git-version: "${CONSUS_VERSION}"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  serviceName: upspinserver
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: consus-upspinserver
+    spec:
+      initContainers:
+      - name: setup
+        env:
+        - name: SHELLOPTS
+          value: xtrace
+        image: busybox:1.28.0-musl
+        command:
+          - sh
+          - -xec
+          - mkdir -p /root/upspin
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/root"
+      - name: await-keyserver
+        image: fedora:26
+        command: ['sh', '-xc', 'until curl -v http://keyserver:8070; do sleep 1; done']
+      containers:
+      - name: upspinserver
+        env:
+        - name: KEYSERVER_FQDN
+          value: keyserver
+        - name: KEYSERVER_PORT
+          value: "8070"
+        - name: UPSPINSERVER_FQDN
+        ## TODO: This is terrible and we are terrible.
+          value: consus-upspinserver
+        - name: UPSPINSERVER_PORT
+          value: "8090"
+        - name: EXTRA_CONSUS_WRITERS
+          value: test-agent1@test.labshift.io test-agent2@test.labshift.io
+        image: ${REGISTRY}enki/upspin-server:${CONSUS_VERSION}
+        readinessProbe:
+          tcpSocket:
+            port: upspinserver
+        ports:
+        - name: upspinserver
+          containerPort: 8090
+        resources:
+          requests:
+            memory: "64Mi"
+          limits:
+            memory: "96Mi"
+        volumeMounts:
+          - name: efs-pvc
+            # "$HOME"
+            mountPath: "/root"
+      volumes:
+        - name: efs-pvc
+          persistentVolumeClaim:
+            claimName: consus-upspinserver-store

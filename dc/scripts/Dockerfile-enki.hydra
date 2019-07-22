@@ -1,0 +1,4 @@
+FROM enki/hydra-setup-core
+
+RUN apk add --no-cache bash curl
+COPY configure-enki-hydra.sh /srv/configure-enki-hydra.sh

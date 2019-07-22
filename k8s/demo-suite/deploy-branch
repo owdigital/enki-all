@@ -1,0 +1,85 @@
+#!/bin/bash
+set -e -o nounset -o pipefail
+
+DEFAULT_ZONE=temp-enki.labshift.io
+DEFAULT_REGISTRY=
+registry=${REGISTRY:-$DEFAULT_REGISTRY}
+
+KUBECTL_FLAGS=${KUBECTL_FLAGS:-}
+
+usage() {
+  echo "Usage: $0: [-d] [ -z subdomain ] [ -f output.yaml ] k8s-namespace image-tag"
+  echo "  -d: Delete resources before creating them (for dev branches)"
+  echo "  -z: DNS Zone to use (defaults to k8s-namespace.$DEFAULT_ZONE)"
+  echo "  -f: Write output yaml to ‘output.yaml’"
+}
+
+delete=false
+workdir=$(mktemp -d)
+deploy_config="${workdir}/deploy.yaml"
+zone=''
+
+while getopts "dhz:f:" o; do
+  case "$o" in
+    d)
+      delete=true
+      ;;
+    z)
+      zone="$OPTARG"
+      ;;
+    f)
+      deploy_config="$OPTARG"
+      ;;
+    h):
+      usage
+      exit 0
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+if [ $# -lt 2 ]; then
+  usage
+  exit 1
+fi
+
+namespace=$1
+escaped_build_tag=$2
+
+if [ -z "$zone" ]; then
+  zone=${namespace}.${DEFAULT_ZONE}
+fi
+
+if ! kubectl $KUBECTL_FLAGS get ns ${namespace}; then
+  kubectl $KUBECTL_FLAGS create ns ${namespace}
+fi
+
+tmpf=$(mktemp "$workdir/.joined.XXXXXXXX")
+
+dir=${0%/*}
+
+# Munge in the correct image version
+for f in ${dir}/*.yaml; do
+  echo "---"
+
+  env \
+    "DEMO_SUITE_VERSION=${escaped_build_tag}" \
+    "K8S_ZONE=${zone}" \
+    "REGISTRY=${registry}" \
+    envsubst < "$f" '$AGENT_VERSION $BANK_UI_VERSION $DEMO_SUITE_VERSION $ENKI_CORE_VERSION $K8S_ZONE $REGISTRY'
+done > "$tmpf"
+
+mv -v "$tmpf" "$deploy_config"
+
+if [ "$delete" = "true" ]; then
+  for res in ingress services deployments statefulsets jobs pods persistentvolumeclaims; do
+    kubectl $KUBECTL_FLAGS --namespace ${namespace} delete "$res" --all
+  done
+fi
+
+# Because we're using `deployments` rather than plain
+# replication controllers, we can just use `apply` and
+# have the deployment controller manage it for us. cf:
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment
+kubectl $KUBECTL_FLAGS --namespace ${namespace} apply -f "${deploy_config}"

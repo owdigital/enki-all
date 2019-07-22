@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  agent-a-dev:
+    image: enki/agent:latest
+    depends_on:
+      - upspinserver
+    environment:
+      - ENKI_SERVER_URL=http://enki:3000/
+      - LEIN_REPL_HOST=0.0.0.0
+      - LEIN_REPL_PORT=50000
+      - CONSUS_USER=test-agent1@test.labshift.io
+      - BANK_NAME=bank-a
+      - AGENT_URL=http://agent-a-dev:3010/
+      - OAUTH_CLIENT_ID=bank-a-client
+      - UPSPINSERVER_FQDN=upspinserver
+      - UPSPINSERVER_PORT=8090
+    ports:
+      - 3010:3010
+      - 50000:50000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3010/healthcheck"]
+      interval: 5s
+      timeout: 10s
+      retries: 3

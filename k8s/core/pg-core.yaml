@@ -1,0 +1,135 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pg-core-store
+  annotations:
+#    volume.beta.kubernetes.io/storage-class: "standard"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Headless service to act as namespace for the pg-core StatefulSet below.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-core-ns
+  labels:
+    app: pg-core
+spec:
+  type: ClusterIP
+  clusterIP: None
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: pg-core
+  annotations:
+    enki.services/git-version: ${POSTGRES_VERSION}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  serviceName: pg-core-ns
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pg-core
+    spec:
+      initContainers:
+      - name: migrate
+        env:
+        - name: SHELLOPTS
+          value: xtrace
+        - name: PGDATA
+          value: /data/postgresql/data
+        image: busybox:1.28.0-musl
+        command:
+          - sh
+          - -xc
+          - |
+            parent=${PGDATA%/*}
+            find $parent -maxdepth 1 -mindepth 1 | while read x; do
+              n=${x##*/}
+              if [ "$n" != "data" ]; then
+                mv -v "$x" "$PGDATA"/
+              fi
+            done
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/data/postgresql"
+      - name: startup
+        env:
+        - name: POSTGRES_DB
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_MULTIPLE_DATABASES
+          value: enki-core,hydra
+        - name: SHELLOPTS
+          value: xtrace
+        - name: PGDATA
+          value: /data/postgresql/data
+        image: ${REGISTRY}enki/postgres:${POSTGRES_VERSION}
+        command: ['docker-init.sh']
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/data/postgresql"
+      containers:
+      - name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_MULTIPLE_DATABASES
+          value: enki-core,hydra
+        - name: PGDATA
+          value: /data/postgresql/data
+        image: ${REGISTRY}enki/postgres:${POSTGRES_VERSION}
+        readinessProbe:
+          exec:
+            command: ['sh', '-c', 'pg_isready -U postgres -h $(hostname -f)']
+        livenessProbe:
+          exec:
+            command: ['sh', '-c', 'pg_isready -U postgres -h $(hostname -f)']
+          failureThreshold: 3
+          periodSeconds: 30
+          timeoutSeconds: 30
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"
+        volumeMounts:
+          - name: efs-pvc
+            mountPath: "/data/postgresql"
+      restartPolicy: Always
+      volumes:
+        - name: efs-pvc
+          persistentVolumeClaim:
+            claimName: pg-core-store
+---
+# An actual general service to act as an endpoint for postgres.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-core
+  labels:
+    app: pg-core
+spec:
+  type: NodePort
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: pg-core

@@ -1,0 +1,4 @@
+pytest==4.5.0
+requests==2.21.0
+selenium==4.0.0a1
+diceware==0.9.6

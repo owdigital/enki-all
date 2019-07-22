@@ -1,0 +1,121 @@
+//
+// Enki demo definitions
+// --------------------------------------------------
+
+@import "./brand-colors";
+
+//skin
+.navbar-default .navbar-brand,
+.navbar-default .navbar-brand :hover,
+.navbar-default .navbar-brand :focus {
+  color: @bank-highlight;
+}
+
+h1#hero {
+  color: @bank-main;
+  font-size: 10em;
+}
+
+.bank-logo {
+    font-weight: bold;
+    color: @bank-main;
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-brand :hover,
+.navbar-default .navbar-brand :focus {
+    color: @bank-text;
+}
+
+.navbar-default .navbar-nav li a {
+    color: @bank-text;
+      vertical-align: baseline;
+      padding-bottom: 12px;
+}
+
+.navbar-default .navbar-nav  .active  a,
+.navbar-default .navbar-nav  .active a:focus{
+    color: @bank-text;
+    background-color: @bank-highlight;
+}
+
+.navbar-default .navbar-brand {
+  margin-top: 4px;
+}
+
+.site-main {
+  margin-top: -2px;
+}
+.bank-logo:before {
+  font-family: 'Glyphicons halflings';
+  font-size: 85%;
+  content:"\e225";
+  margin-right: 0.4rem;
+  color: @bank-main;
+}
+
+.enki-consumer-logo:before,
+.enki-logo:before {
+  font-family: 'Glyphicons halflings';
+  font-size: 85%;
+  content:"\e033";
+  margin-right: 0.4rem;
+  color: @enki-d;
+}
+
+.enki-consumer-logo,
+.enki-logo {
+  color: @enki-d;
+  a {
+    color: @enki-d;
+    font-weight: bold;
+  }
+}
+
+.openid-logo {
+  color: #f7931e;
+}
+
+//Refs to Enki
+
+.enki-btn {
+  background-color: @enki-l;
+  box-sizing: border-box;
+  border-width: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 12px;
+  min-width: 140px;
+}
+
+.enki-btn:hover, .enki-btn:focus, .enki-btn:active,  .enki-btn:active:focus {
+    background-color: @enki-h;
+}
+
+.enki-text {
+  color: @enki-text;
+  background-image: url('/img/ekey-24.png');
+  background-position: 0px 0px;
+  background-repeat: no-repeat;
+  text-indent: 30px;
+  text-align:left;
+}
+
+#enki-modal .modal-header,
+.enki-callout p,
+p.enki {
+  color: @enki-text;
+}
+
+.enki-callout {
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #eee;
+    border-left-width: 5px;
+    border-radius: 3px;
+    width: 100%;
+}
+
+.enki-callout-info {
+    border-left-color: @enki-h;
+}

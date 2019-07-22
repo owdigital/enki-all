@@ -1,0 +1,8 @@
+{
+  "type": "pii-data",
+  "id": "delta",
+  "piiType": "surname",
+  "subjectId": "alpha",
+  "processorId": "beta",
+  "value": "foo"
+}

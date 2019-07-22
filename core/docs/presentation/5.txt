@@ -1,0 +1,8 @@
+@startuml
+
+:Alice: --> [Enki]
+[Enki] --> [BankA] : Redirect
+[BankA] --> [Consent] : She logs in
+[Consent] --> [Enki] : Alice gives consent. \nEnki knows about her\nuserid in BankA.
+
+@enduml

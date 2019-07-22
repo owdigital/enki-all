@@ -1,0 +1,76 @@
+#!/bin/bash
+set -e -o nounset -o pipefail
+
+DEFAULT_ZONE=temp-enki.labshift.io
+
+DEPLOYS_CONVERTED_TO_OTHER=( pg-core )
+
+usage() {
+  echo "Usage: $0: [-d] k8s-namespace deploy.yaml"
+  echo "  -d		  Delete resources before creating them (for dev branches)"
+}
+
+
+set -x
+
+delete=false
+
+while getopts "dh" o; do
+  case "$o" in
+    d)
+      delete=true
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+if [ $# -ne 2 ]; then
+  usage
+  exit 1
+fi
+
+namespace=$1
+deploy_config=$2
+
+if ! kubectl get ns ${namespace}; then
+  kubectl create ns ${namespace}
+fi
+
+if [ "$delete" = "true" ]; then
+  for res in ingress services deployments statefulset jobs pods; do
+    kubectl --namespace ${namespace} delete "$res" --all
+  done
+fi
+
+current_deploys=$(mktemp /tmp/deploys-XXXXXXXXX)
+kubectl --namespace ${namespace} get deploy  \
+  -o 'go-template={{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' \
+  > "$current_deploys"
+for deploy in ${DEPLOYS_CONVERTED_TO_OTHER[@]}; do
+  if grep -q "^$deploy$" $current_deploys; then
+    kubectl --namespace ${namespace} delete deploy "$deploy"
+  fi
+done
+
+# Because we're using `deployments` rather than plain
+# replication controllers, we can just use `apply` and
+# have the deployment controller manage it for us. cf:
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment
+kubectl --namespace ${namespace} apply -f "$deploy_config"
+
+kubectl --namespace ${namespace} get service/enki-core --output=yaml
+kubectl --namespace ${namespace} get ing/ingress --output=yaml
+
+echo "To access your environment run 'kubectl proxy'"
+echo "Then access your service via http://localhost:8001/api/v1/proxy/namespaces/${namespace}/services/enki-core:80/"
+echo "... Or via the load balancer specified above in develop."
+
+echo "Your environment will be accessible via the following hostnames:"
+kubectl --namespace ${namespace} get ing/ingress --output=jsonpath='{.spec.rules[*].host}{"\n"}'
+echo "Assuming you have added CNAMES to:"
+kubectl --namespace ${namespace} get ing/ingress --output=jsonpath='{.status.loadBalancer.ingress[*].hostname}{"\n"}'

@@ -1,0 +1,1 @@
+INSERT INTO "user" ("id", "name", "password", "admin") VALUES ('6758a482-7ba4-11e8-95a0-0242ac160003', 'admin', 'bcrypt+sha512$64f95e77beca633cf16fac0ac7051915$12$a08cf605383e22373885d0e58e23f96248ffca67aeb247ff', TRUE);

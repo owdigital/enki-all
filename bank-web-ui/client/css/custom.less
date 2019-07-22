@@ -1,0 +1,27 @@
+// --------------------------------------------------
+//
+//  Custom CSS
+//
+//  Write your custom, app-specific CSS here.
+//  It will be included after 'core.css', which is based on Bootstrap.
+//
+//  NOTE: Try to minimize your use of this file.
+//    - Most of what you need is probably available via the UI elements in core.css.
+//    - Component specific styles should go in the "style" element of the component's .vue file. (See home.vue for example)
+//
+// --------------------------------------------------
+@bank-color-theme: 'bank-default';
+
+
+@import '~npm-font-open-sans/open-sans';
+@FontPathOpenSans: "./fonts/";
+@import "variables";
+@import "fixed-footer";
+@import "subnav";
+@import "footer";
+@import "sidebar";
+@import "table-metrics";
+@import "forms";
+@import "style";
+@import "brand";
+@import "custom/@{bank-color-theme}/bank";

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      function validateScopes() {
+        var invalidScopes = 0;
+        var scopes = {{{json scopes}}};
+        scopes.forEach(function(scope) {
+          var id = scope["id"];
+          if (Array.prototype.filter.call(document.getElementsByName(id), x => x.checked).length == 0) {
+            document.getElementById(id).className = "fieldSource alert-danger";
+            invalidScopes +=1;
+          }
+          else {
+            document.getElementById(id).className = "fieldSource";
+          }
+        });
+        return invalidScopes == 0;
+      }
+
+      function thisSource(origin){
+        var originCollection = document.getElementsByClassName("radio-"+origin);
+        for (var i = 0; i < originCollection.length; i++) {
+          originCollection[i].checked = true;
+        }
+      }
+      function showShortcuts(){
+        var bankaSrcs = document.getElementsByClassName("radio-bank-a");
+        var bankbSrcs = document.getElementsByClassName("radio-bank-b");
+        var ironbankSrcs = document.getElementsByClassName("radio-iron-bank");
+        if(bankaSrcs.length > 0){
+            document.getElementById("banka-all").style.display = 'block';
+        }
+        if(bankbSrcs.length > 0){
+            document.getElementById("bankb-all").style.display = 'block';
+        }
+        if(ironbankSrcs.length > 0){
+            document.getElementById("ironbank-all").style.display = 'block';
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="{{webpackBaseUrl}}/{{lookupdict bundles 'bundle.css'}}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+
+
+    h3 {
+      margin: 1em 0 1em 0;
+    }
+    span.no-access:before  {
+      font-family: 'FontAwesome';
+      font-size: 85%;
+      content:"\f00d";
+      margin-right: 0.4rem;
+    }
+    span.no-access  {
+      padding: 0 0.4rem 0 0.4rem;
+    }
+
+    span.source-label.no-access{
+      padding: 0 0 0 0.4rem;
+    }
+    span.bank-a:before,
+    span.bank-b:before,
+    span.iron-bank:before,
+    span.bank-a-client:before,
+    span.bank-b-client:before,
+    span.iron-bank-client:before  {
+      font-family: 'FontAwesome';
+      font-size: 103%;
+      content:"\f0d6";
+      margin-right: 0.6rem;
+    }
+
+    span.source-label{
+      padding: 0 0.4rem 0 0.4rem;
+    }
+
+    .shortcut span.bank-a {
+      padding: 0 0.4rem 0 0;
+    }
+
+    span.bank-a,
+    span.bank-a-client {
+      color: #2E4DA9;
+    }
+
+    span.bank-b,
+    span.bank-b-client {
+      color: #23C03E;
+    }
+
+    span.iron-bank,
+    span.iron-bank-client {
+      color: #757679;
+    }
+   ul.consent-fields {
+      padding-left: 0px;
+      list-style-type: none;
+      clear: both;
+    }
+   ul.consent-fields li {
+      clear: left;
+      line-height: 2em;
+      height: 2em;
+    }
+   ul.consent-fields li:hover {
+      border-bottom: #cfcfcf;
+    }
+   ul.consent-fields li legend {
+    display: table-cell;
+    width: 150px;
+    margin-bottom: 0px;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    border-bottom: 0px;
+    float: left;
+    padding-right: 1em;
+  }
+  ul.consent-fields li .radio-group {
+    float: left;
+    margin-right: 1em;
+  }
+  .submit-wrap {
+    clear: both;
+    padding-top: 1em;
+  }
+
+  li#banka-all,
+  li#bankb-all,
+  li#ironbank-all {
+    display: none;
+  }
+
+  .shortcut input {
+    padding-right: 0.4rem;
+  }
+    </style>
+  </head>
+
+<body onload="showShortcuts()">
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+    <div class="consent-container enki-bg">
+    <h1 class="panel-brand"><span class="enki-logo">Enki</span></h1>
+    <h3><span class="{{client-id}}">{{client-name}}</span> would like to share your personal information</h3>
+    {{#if error}}
+    <p>{{error}}</p>
+    {{/if}}
+    <form method="POST" action="{{make-query-params "consent" "challenge" challenge}}" onsubmit="return validateScopes()">
+        <input type="hidden" name="__anti-forgery-token" value="{{csrfToken}}">
+        <h4>Choose which, if any, version is shared:</h4>
+        <ul class="consent-fields">
+        <li id="banka-all" class="shortcut">
+          <input type="radio" name="all-source" onchange="thisSource('bank-a')">
+          <span class="source-label"> Take all from</span> <span class="source-label bank-a">bank-a</span>
+        </li>
+        <li id="bankb-all" class="shortcut">
+          <input type="radio" name="all-source" onchange="thisSource('bank-b')">
+          <span class="source-label"> Take all from</span> <span class="source-label bank-b">bank-b</span>
+        </li>
+        <li id="ironbank-all" class="shortcut">
+          <input type="radio" name="all-source" onchange="thisSource('iron-bank')">
+          <span class="source-label"> Take all from</span> <span class="source-label iron-bank">iron-bank</span>
+        </li>
+        <li>
+          <input type="radio" name="all-source" onchange="thisSource('none')" >
+          <span class="source-label no-access"></span>Don't share any</span>
+        </li>
+        <h4>Or select line by line:</h4>
+        {{#each scopes}}
+        <li id="{{this.id}}" class="fieldSource">
+            <legend class="not-legend">{{this.description}}</legend>
+            <!-- TODO: why is the source data below not shown if I change the above legend tag to any other type of tag  -->
+            {{#each this.banks}}
+              <div class="radio-group">
+                <input type="radio" class="radio-{{this.bank_css_id}}" value="{{this.id}}" name="{{this.pii}}"></input>
+                <span class="source-label {{this.bank_css_id}}">{{this.bank_name}}</span>
+              </div>
+            {{/each}}
+              <div class="radio-group">
+                <input type="radio" class="radio-none" value="" name="{{this.id}}" ></input>
+                <span class="no-access">Don't share</span>
+              </div>
+
+        </li>
+        {{/each}}
+      </ul>
+        <div class="submit-wrap">
+          <input type="submit" value="Confirm" class="btn btn-lg btn-primary">
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

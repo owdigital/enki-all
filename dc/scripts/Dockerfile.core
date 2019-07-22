@@ -1,0 +1,4 @@
+FROM enki/core:latest
+
+COPY wait-for-it.sh /usr/bin/wait-for-it
+RUN chmod +x /usr/bin/wait-for-it

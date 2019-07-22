@@ -1,0 +1,61 @@
+# See https://github.com/kubernetes-incubator/external-storage/blob/f86d0d998159dbf6908c4ef67376ce5b49da983e/aws/efs/README.md
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: default
+  name: efs-provisioner
+data:
+  # See https://owlabs.atlassian.net/wiki/spaces/DTY/pages/133534866/Kubernetes
+  file.system.id: fs-5bc82402
+  aws.region: eu-central-1
+  provisioner.name: github.com/kubernetes-incubator.external-storage.tree.master.aws.efs
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  namespace: default
+  name: efs-provisioner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate 
+  template:
+    metadata:
+      labels:
+        app: efs-provisioner
+    spec:
+      containers:
+        - name: efs-provisioner
+          image: quay.io/external_storage/efs-provisioner:latest
+          env:
+            - name: FILE_SYSTEM_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: efs-provisioner
+                  key: file.system.id
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: efs-provisioner
+                  key: aws.region
+            - name: PROVISIONER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: efs-provisioner
+                  key: provisioner.name
+          volumeMounts:
+            - name: pv-volume
+              mountPath: /persistentvolumes
+      volumes:
+        - name: pv-volume
+          nfs:
+            server: fs-5bc82402.efs.eu-central-1.amazonaws.com
+            path: /
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: aws-efs
+provisioner: github.com/kubernetes-incubator.external-storage.tree.master.aws.efs

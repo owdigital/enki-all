@@ -1,0 +1,12 @@
+# Ignore these files/folders:
+build/devscript.js
+node_modules
+packages-cache
+client/lib
+client/builds
+test/integration/sampletest.js
+client/app.min.js
+dist
+coverage
+test/fixtures
+test/ereshkigal/work/

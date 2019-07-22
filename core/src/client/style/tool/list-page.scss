@@ -1,0 +1,48 @@
+@import "../base/variables";
+
+.bulk-selector {
+    border: 2px $tool-grey-dark solid;
+    border-radius: 9px;
+    cursor: pointer;
+    float: left;
+    height: 16px;
+    margin: 2px 14px 0 0;
+    width: 16px;
+
+    &.selected {
+        background: $tool-grey-dark;
+    }
+
+}
+
+#search-by-name {
+    border: solid 1px $tool-grey-light;
+    border-radius: 1px;
+    font-size: $font-size-base * 0.95;
+}
+
+.delete {
+    cursor: pointer;
+    margin-left: 15px;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.dropdown-menu {
+    padding: 0;
+
+    .dropdown-item {
+        background: $tool-grey-lightest;
+        border: solid 1px $tool-grey-light;
+        font-family: $font-family-base;
+        font-size: $font-size-small;
+        width: 100%;
+    }
+}
+
+.modal-create, .modal-delete {
+    .modal-body > p {
+        margin: 15px 0;
+    }
+}

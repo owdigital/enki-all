@@ -1,0 +1,17 @@
+@startuml
+
+package "Bank" {
+  [Backend] -> [Enki Agent] : PII Data
+}
+
+database "Consus"
+
+database "Enki"
+
+:Alice: --> [Backend]
+
+[Enki Agent] --> [Consus] : Encrypted PII Data
+
+[Enki Agent] --> [Enki] : Signed Metadata
+
+@enduml

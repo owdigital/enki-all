@@ -1,0 +1,30 @@
+// --------------------------------------------------
+//
+//  Custom CSS
+//
+//  Write your custom, app-specific CSS here.
+//  It will be included after 'core.css', which is based on Bootstrap.
+//
+//  NOTE: Try to minimize your use of this file.
+//    - Most of what you need is probably available via the UI elements in core.css.
+//    - Component specific styles should go in the "style" element of the component's .vue file. (See home.vue for example)
+//
+// --------------------------------------------------
+
+//@import "~open-sans/open-sans";
+
+@import "brand";
+
+// Overwritten Labskit template
+
+body {
+  background: linear-gradient($enki-h, $enki-l);
+}
+
+.navbar-default, .navbar {
+  background: #fff;
+}
+
+.footer {
+  background: white;
+}

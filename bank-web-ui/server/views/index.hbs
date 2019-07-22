@@ -1,0 +1,17 @@
+{{!--
+This is the main index page into which we should put our application content. It will be rendered inside the body
+tag of layouts/main.hbs
+
+For more information see http://handlebarsjs.com/
+--}}
+
+<div id="vueholder" class="fixed-footer-page-content">
+    <ow-navbar></ow-navbar>
+
+    <div class="col-sm-12">
+        <router-view></router-view>
+    </div>
+
+    <div class="clearfix"></div>
+    <ow-footer class="fixed-footer-footer"></ow-footer>
+</div>

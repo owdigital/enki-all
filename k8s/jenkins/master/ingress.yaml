@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+spec:
+  rules:
+  - host: jenkins.gcp.labshift.io
+    http:
+      paths:
+      - backend:
+          serviceName: jenkins-ui
+          servicePort: 8080

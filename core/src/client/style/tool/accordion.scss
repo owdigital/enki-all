@@ -1,0 +1,119 @@
+#accordion {
+    margin-bottom: 10px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+#accordion-content, #accordion-preview {
+    padding: 20px 16px 16px 16px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: -4px;
+    border: $tool-grey-darkest solid 1px;
+    border-radius: 0px 0px 4px 4px;
+    border-top-style: none;
+
+    &.completed {
+        border-color: $tool-green;
+    }
+
+    &.in-progress {
+        border-color: $tool-red;
+    }
+}
+#accordion-content:empty, #accordion-preview:empty {
+  display: none!important;
+}
+
+#header-expanded, #header-collapsed {
+    overflow: visible;
+}
+
+#header-expanded {
+    color: $tool-white;
+}
+
+#accordion-header {
+    height: 57px;
+    border-radius: 4px;
+    background-color: $tool-grey-light;
+    border: solid 1px $tool-grey-darkest;
+    padding: 16px;
+    margin-left: 0px;
+    margin-right: 0px;
+
+    &.expanded {
+      background-color: $tool-grey-darkest;
+      color: $tool-white;
+    }
+
+    &.completed {
+        border-color: $tool-green;
+    }
+
+    &.in-progress {
+        border-color: $tool-red;
+    }
+
+    &.no-status .status {
+        display: none;
+    }
+
+    .col-md-6 {
+        padding: 0;
+    }
+
+    .title {
+        color: $tool-blue-medium-alt;
+        font-family: $font-family-base;
+        font-size: 16px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.25;
+        letter-spacing: normal;
+        text-align: left;
+    }
+
+    .status {
+        text-align: right;
+    }
+
+    .status-icon {
+        border-radius: 8px;
+        background: $tool-yellow;
+        display: block;
+        float: right;
+        height: 15px;
+        width: 15px;
+        margin: 5px 0 0 16px;
+
+        &.completed {
+        background: $tool-green;
+        }
+
+        &.in-progress {
+        background: $tool-red;
+        }
+
+        &.not-started {
+        background: $tool-grey-medium;
+        }
+
+    }
+}
+
+.toggle-control {
+    float: left;
+    margin: 3px 16px 0 0;
+    cursor: pointer;
+
+    &.expanded {
+        color: $tool-white;
+    }
+}
+
+.hide {
+    overflow: hidden;
+    display: none;
+}

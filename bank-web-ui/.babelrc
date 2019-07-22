@@ -1,0 +1,28 @@
+{
+  "presets": [
+    [
+    "@babel/env",
+      {
+        "modules": "commonjs",
+        "useBuiltIns": "entry",
+        "corejs": 3,
+        "targets": {
+          "browsers": [
+            "last 2 versions",
+            "ie >= 11"
+          ]
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    "add-module-exports",
+    ["@babel/proposal-decorators", { "legacy": true }],
+    ["@babel/proposal-class-properties", { "loose": true }]
+  ],
+  "env": {
+    "test": {
+      "plugins": [ "istanbul" ]
+    }
+  }
+}

@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+  core:
+    command: ["repl", ":headless"]
+    environment:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/core?user=postgres&password=postgres
+      - HYDRA_SERVER_URL=http://hydra:4444
+      - HYDRA_ADMIN_LOGIN=admin
+      - HYDRA_ADMIN_PASSWORD=demo-password
+      - HYDRA_CLIENT_ID=consent-app
+      - HYDRA_CLIENT_SECRET=consent-secret
+      - LEIN_REPL_HOST=0.0.0.0
+      - LEIN_REPL_PORT=50000
+    ports:
+      - 3000:3000
+      - 50000:50000
+  fmt:
+    image: clojure:lein-2.8.1
+    entrypoint: lein fmt
+    environment:
+      - HOME=/root
+    volumes:
+      - .:/tmp
+      - ~/.aws/:/root/.aws:ro
+      - ~/.m2/:/root/.m2
+    environment:
+      - AWS_PROFILE=$AWS_PROFILE
+  postgres:
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_MULTIPLE_DATABASES=core,hydra
+  hydra-setup:
+    build:
+      context: .
+      dockerfile: ./integration_test/Dockerfile.hydra-setup
+    depends_on:
+      - postgres
+      - hydra
+    environment:
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra?sslmode=disable
+      - DOMAIN_NAME=test.demo
+      - INSTANCE=http://hydra:4444
+      - BANK_A_CALLBACK=http://localhost:9001/signupcallback
+    entrypoint: /srv/configure-hydra.sh
+    restart: on-failure
+  hydra:
+    depends_on:
+      - postgres
+    environment:
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/hydra?sslmode=disable
+      - FORCE_ROOT_CLIENT_CREDENTIALS=admin:demo-password
+      - ISSUER=http://localhost:4444/
+      - SYSTEM_SECRET=y82XL-wAPCCZu+B4
+      - CONSENT_URL=http://localhost:3000/consent
+    restart: on-failure

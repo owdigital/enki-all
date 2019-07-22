@@ -1,0 +1,23 @@
+{{!-- We can use this partial to neatly display alerts on a page. Alerts are passed using req.flash.
+    See https://github.com/jaredhanson/connect-flash for more info --}}
+<div class="alert-container">
+  <div class="alert-row">
+    <div class="alert-content">
+        {{#if info}}
+            <div class="border-info text-info bg-white alert">
+                <span>{{info}}</span>
+            </div>
+        {{/if}}
+        {{#if warning}}
+            <div class="border-warning text-warning bg-white alert">
+                <span>{{warning}}</span>
+            </div>
+        {{/if}}
+        {{#if error}}
+            <div class="border-danger text-danger bg-white alert">
+                <span>{{error}}</span>
+            </div>
+        {{/if}}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+[
+  "cookieSecret",
+  "sessionSecret",
+  "owAuth.users",
+  "webpackConfig"
+]

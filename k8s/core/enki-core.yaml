@@ -1,0 +1,87 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: enki-core
+  annotations:
+    enki.services/git-version: ${ENKI_CORE_VERSION}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        app: enki-core
+    spec:
+      initContainers:
+      - name: await-postgres
+        image: postgres:9.6-alpine
+        command: ['sh', '-xc', 'until pg_isready -U postgres -h pg-core -d enki-core; do sleep 1; done']
+      containers:
+      - name: enki-core
+        env:
+        - name: DATABASE_URL
+          value: jdbc:postgresql://pg-core:5432/enki-core?user=postgres&password=postgres
+        - name: HTTP_PORT
+          value: "80"
+        - name: BASE_URI_BANK_A
+          value: https://bank-a.${K8S_ZONE}
+        - name: BASE_URI_BANK_B
+          value: https://bank-b.${K8S_ZONE}
+        # This seems to be used for both browser redirects and backchannel comms.
+        # Should really split those.
+        - name: HYDRA_SERVER_URL
+          value: https://hydra.${K8S_ZONE}/
+        - name: HYDRA_ADMIN_LOGIN
+          value: admin
+        - name: HYDRA_ADMIN_PASSWORD
+          value: demo-password
+        - name: HYDRA_CLIENT_ID
+          value: consent-app
+        - name: HYDRA_CLIENT_SECRET
+          value: consent-secret
+        - name: OAUTH_AUTHORIZE_URI_BANK_A
+          value: https://hydra-a.${K8S_ZONE}/oauth2/auth
+        - name: OAUTH_BASE_URI_BANK_A
+          value: https://hydra-a.${K8S_ZONE}
+        - name: OAUTH_CLIENT_ID_BANK_A
+          value: enki-consumer
+        - name: OAUTH_CLIENT_SECRET_BANK_A
+          value: enki-secret
+        - name: OAUTH_AUTHORIZE_URI_BANK_B
+          value: https://hydra-b.${K8S_ZONE}/oauth2/auth
+        - name: OAUTH_BASE_URI_BANK_B
+          value: https://hydra-b.${K8S_ZONE}
+        - name: OAUTH_CLIENT_ID_BANK_B
+          value: enki-consumer
+        - name: OAUTH_CLIENT_SECRET_BANK_B
+          value: enki-secret
+        # image: enki-core:v1
+        image: ${REGISTRY}enki/core:${ENKI_CORE_VERSION}
+        readinessProbe:
+          httpGet:
+            path: /api/healthcheck
+            port: 80
+        ports:
+        - name: enki-core
+          containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: enki-core
+spec:
+  type: NodePort
+  ports:
+  - name: enki-core-http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: enki-core

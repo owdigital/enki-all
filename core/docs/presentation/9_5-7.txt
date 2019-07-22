@@ -1,0 +1,17 @@
+@startuml
+
+database "Consus"
+
+package "BankB" {
+  [Backend B] - [Enki Agent B]
+}
+
+package "Enki" {
+  [Data Permissions]
+}
+
+[Data Permissions] --> [Backend B] : 5. Enki sends locations of PII data.
+[Enki Agent B] <--> [Consus] : 6. AgentB gets Alice's PII data from Consus through AgentA.
+[Backend B] --> :Alice: : 7. BankB shows Alice's data from BankA.
+
+@enduml

@@ -1,0 +1,6 @@
+FROM enki/hydra-setup-core
+
+RUN apk add --no-cache bash curl
+COPY onboard-partner-hydra.sh /srv/onboard-partner-hydra.sh
+
+ENTRYPOINT /go/bin/hydra host --dangerous-force-http --disable-telemetry

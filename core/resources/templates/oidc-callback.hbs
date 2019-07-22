@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="img/owlfavicon.ico" type="image/x-icon"/>
+    <title>Approve sharing of meta data</title>
+    <link rel="stylesheet" href="{{webpackBaseUrl}}/{{lookupdict bundles 'bundle.css'}}">
+    <link rel="stylesheet" href="build/login.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body class="bg">
+
+    {{> alerts }}
+
+    <div class="login-container">
+      <form class="form-signin highlight-bg" role="form" action="{{make-query-params "/oidc-callback" "uid" uid}}" method="post">
+        <img class="header-image" src="{{webpackBaseUrl}}/img/einfo-logo.png" alt="eInfo Logo"></img>
+        <p class="intro">Please approve that the below listed meta data is stored on eInfo services.</p>
+        {{> alerts }}
+        <div class="input-block">
+          <label for="uid" class="input-label">Bank user id</label>
+          <input required name="uid" id="uid" class="form-control" placeholder="User id" autofocus autocomplete="off" disabled value="{{bank-user-id}}">
+        </div>
+        <div class="input-block" v-if="{{result}}">
+          <p class="intro">{{result}}</p>
+        </div>
+        <div class="input-block" v-else>
+          <button class="btn btn-lg btn-primary pull-right" type="submit" id="submit">APPROVE</button>
+        </div>
+        <input id="__anti-forgery-token" type="hidden" name="__anti-forgery-token" value="{{csrfToken}}">
+        <input id="__uid" type="hidden" name="__uid" value="{{bank-user-id}}">
+
+      </form>
+    </div>
+</body>
+</html>

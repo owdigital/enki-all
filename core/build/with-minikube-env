@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e -o nounset -o pipefail
+
+function nodeport() {
+	kubectl --context=minikube -n localdev get svc/$1 -o go-template='{{range .spec.ports}}{{if .nodePort}}{{.nodePort}}{{"\n"}}{{end}}{{end}}'
+}
+
+ip=$(minikube ip)
+pg_port=$(nodeport pg-core)
+hydra_port=$(nodeport hydra)
+core_port=$(nodeport enki-core)
+
+printf "ip:%s; pg:%s; hydra:%s\n" "$ip" "$pg_port" "$hydra_port" 1>&2
+
+export DATABASE_URL="jdbc:postgresql://${ip}:${pg_port}/enki-core?user=postgres&password=postgres"
+export CORE_DATABASE_URL="$DATABASE_URL"
+export HYDRA_SERVER_URL="http://${ip}:${hydra_port}/"
+export CORE_URL="http://${ip}:${core_port}/"
+
+exec $@

@@ -1,0 +1,64 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bank-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-realm: Authentication Required - Enki
+    nginx.ingress.kubernetes.io/auth-secret: enki-basic-auth
+    nginx.ingress.kubernetes.io/auth-type: basic
+    certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
+    certmanager.k8s.io/acme-challenge-type: http01
+spec:
+  tls:
+  - secretName: bank-enki-tls
+    hosts:
+    - bank-a.${K8S_ZONE}
+    - bank-b.${K8S_ZONE}
+  rules:
+  - host: bank-a.${K8S_ZONE}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: bank-a-web-ui
+          servicePort: 80
+  - host: bank-b.${K8S_ZONE}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: bank-b-web-ui
+          servicePort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bank-hydra-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: nginx
+    certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
+    certmanager.k8s.io/acme-challenge-type: http01
+spec:
+  tls:
+  - secretName: bank-hydra-enki-tls
+    hosts:
+    - hydra-a.${K8S_ZONE}
+    - hydra-b.${K8S_ZONE}
+  rules:
+  - host: hydra-a.${K8S_ZONE}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: bank-a-hydra
+          servicePort: hydra-a-http
+  - host: hydra-b.${K8S_ZONE}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: bank-b-hydra
+          servicePort: hydra-b-http

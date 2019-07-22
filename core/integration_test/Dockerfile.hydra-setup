@@ -1,0 +1,11 @@
+FROM oryd/hydra:v0.9.16-without-telemetry
+LABEL maintainer="Enki Team <enki-questions@oliverwyman.com>"
+
+ENV LOG_LEVEL warn
+
+# Needed by hydra-setup in dev/docker-compose.yml
+COPY configure-hydra.sh /srv/configure-hydra.sh
+COPY wait-for-it.sh /srv/wait-for-it.sh
+
+# run, and then block until container is killed
+ENTRYPOINT /srv/configure-hydra.sh && echo 'hydra configured' && mkfifo pipe && cat pipe

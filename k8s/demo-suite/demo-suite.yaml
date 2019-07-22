@@ -1,0 +1,48 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: demo-suite
+  annotations:
+    enki.services/git-version: "${DEMO_SUITE_VERSION}"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: demo-suite
+    spec:
+      containers:
+      - name: demo-suite
+        image: ${REGISTRY}enki/demo-suite:${DEMO_SUITE_VERSION}
+        env:
+        - name: BANK_A_URL
+          value: https://bank-a.${K8S_ZONE}
+        - name: BANK_B_URL
+          value: https://bank-b.${K8S_ZONE}
+        - name: ENKI_URL
+          value: http://enki.${K8S_ZONE}
+        - name: ZONE
+          value: ${K8S_ZONE}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+        ports:
+        - name: demo-sute
+          containerPort: 80
+      restartPolicy: Always
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: demo-suite
+spec:
+  type: NodePort
+  ports:
+  - name: demo-suite-http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: demo-suite

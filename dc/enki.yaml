@@ -1,0 +1,94 @@
+version: '3'
+
+services:
+  enki:
+    build:
+      context: scripts
+      dockerfile: Dockerfile.core
+    links:
+      - postgres
+      - hydra-enki
+      - hydra-setup-enki
+      - hydra-bank-a
+      - hydra-setup-bank-a
+      - hydra-bank-b
+      - hydra-setup-bank-b
+    user: root
+    entrypoint: bash -c "wait-for-it --timeout=60 hydra-enki:4444 -- wait-for-it --timeout=60 postgres:5432 -- java -jar target/enki.jar $$@" --
+    environment:
+      - BASE_URI_BANK_A=http://bank-a:9001
+      - BASE_URI_BANK_B=http://bank-b:9002
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/enki-core?user=postgres&password=postgres
+      - HYDRA_SERVER_URL=http://hydra-enki:4444
+      - EXTERNAL_HYDRA_SERVER_URL=http://localhost:5444
+      - HTTP_PORT=3000
+      - HYDRA_ADMIN_LOGIN=admin
+      - HYDRA_ADMIN_PASSWORD=demo-password
+      - HYDRA_CLIENT_ID=consent-app
+      - HYDRA_CLIENT_SECRET=consent-secret
+      - OAUTH_BASE_URI_BANK_A=http://hydra-bank-a:4444
+      - OAUTH_AUTHORIZE_URI_BANK_A=http://localhost:4444/oauth2/auth
+      - OAUTH_CLIENT_ID_BANK_A=enki-consumer
+      - OAUTH_CLIENT_SECRET_BANK_A=enki-secret
+      - OAUTH_BASE_URI_BANK_B=http://hydra-bank-b:4444
+      - OAUTH_AUTHORIZE_URI_BANK_B=http://localhost:4445/oauth2/auth
+      - OAUTH_CLIENT_ID_BANK_B=enki-consumer
+      - OAUTH_CLIENT_SECRET_BANK_B=enki-secret
+      - OAUTH_BASE_URI_IRON_BANK=http://hydra-iron-bank:4444
+      - OAUTH_AUTHORIZE_URI_BANK_IRON_BANK=http://localhost:4446/oauth2/auth
+      - OAUTH_CLIENT_ID_IRON_BANK=enki-consumer
+      - OAUTH_CLIENT_SECRET_IRON_BANK=enki-secret
+      # Changes in these variables might have to be reflected in /docker.md and /dc/bank-local-dev/2.core.repl.sh
+    ports:
+      - 3000:3000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3000/api/healthcheck"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+  agent-a:
+    image: enki/agent:latest
+    links:
+      - enki
+      - upspinserver
+      - keyserver
+    entrypoint: bash -c "/srv/wait-for-it --timeout=0 --strict upspinserver:8090 -- /srv/wait-for-it --timeout=0 --strict enki:3000 -- /srv/configure-upspin.sh && /srv/run.sh"
+    environment:
+      - ENKI_SERVER_URL=http://enki:3000/
+      - BANK_NAME=bank-a
+      - OAUTH_CLIENT_ID=bank-a-client
+      - CONSUS_USER=test-agent1@test.labshift.io
+      - AGENT_URL=http://agent-a:3010
+      - UPSPINSERVER_FQDN=upspinserver
+      - UPSPINSERVER_PORT=8090
+      # Changes in these variables might have to be reflected in /docker.md and /dc/bank-local-dev/4.agent.repl.sh
+    ports:
+      - 3010:3010
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3010/healthcheck"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+  agent-b:
+    image: enki/agent:latest
+    links:
+      - enki
+      - upspinserver
+      - keyserver
+    entrypoint: bash -c "/srv/wait-for-it --timeout=0 --strict upspinserver:8090 -- /srv/wait-for-it --timeout=0 --strict enki:3000 -- /srv/configure-upspin.sh && /srv/run.sh"
+    environment:
+      - ENKI_SERVER_URL=http://enki:3000/
+      - BANK_NAME=bank-b
+      - OAUTH_CLIENT_ID=bank-b-client
+      - CONSUS_USER=test-agent2@test.labshift.io
+      - AGENT_URL=http://agent-b:3011
+      - PORT=3011
+      - UPSPINSERVER_FQDN=upspinserver
+      - UPSPINSERVER_PORT=8090
+    ports:
+      - 3011:3011
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3011/healthcheck"]
+      interval: 5s
+      timeout: 10s
+      retries: 3

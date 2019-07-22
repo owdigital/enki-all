@@ -1,0 +1,11 @@
+# Ignore these files/folders:
+build/devscript.js
+node_modules
+client/lib
+client/builds
+test/integration/sampletest.js
+client/app.min.js
+dist
+coverage
+test/fixtures
+.nightwatch-test-results

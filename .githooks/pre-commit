@@ -1,0 +1,25 @@
+#!/bin/bash
+
+packageFilesChanged=0
+acknowledgementsChanged=0
+echo "Checking for changed package definitions..."
+
+while read st file; do
+    # Check if any of our package files have changed (Clojure, JS, Python respectively)
+    if [[ $file == *"/project.clj" ]] || [[ $file == *"/package.json" ]] || [[ $file == *"/requirements.txt" ]]; then 
+        echo "File $file updated"
+        packageFilesChanged=1
+    fi
+    # Check the acknowledgements file
+    if [ "$file" == 'ACKNOWLEDGEMENTS.md' ]; then 
+        echo "ACKNOWLEDGEMENTS.md updated"
+        acknowledgementsChanged=1
+    fi
+done <<< "$(git diff --cached --name-status)"
+
+if [[ $packageFilesChanged -eq 1 ]] && [[ $acknowledgementsChanged -eq 0 ]]; then
+    echo "[WARNING] Package definitions may have changed. Please update ACKNOWLEDGEMENTS.md appropriately (or git commit --no-verify if you have checked it doesn't need to change)"
+    exit 1
+fi
+
+exit 0

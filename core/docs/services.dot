@@ -1,0 +1,68 @@
+digraph services {
+    # dotted lines go via browser, solid are direct
+    rankdir=LR;
+
+    # Deployments
+    subgraph cluster_bank_common {
+	label="Bank common";
+        consus_keyserver[label="Consus Keyserver",shape="polygon"];
+        consus_upspinserver[label="Consus Upspin server",shape="polygon"];
+    }
+
+    subgraph cluster_bank_a {
+	label = "Bank A";
+        pg_bank_a[label="Postgres(Bank A)",shape="polygon"];
+        hydra_bank_a[label="Hydra (Bank A)",shape="ellipse"];
+        bank_ui_bank_a[label="Bank UI (Bank A)",shape="polygon"];
+        bank_agent_a[label="Bank Agent (Bank A)",shape="polygon"];
+    }
+
+    subgraph cluster_bank_b {
+	label = "Bank B";
+        pg_bank_b[label="Postgres(Bank B)",shape="polygon"];
+        hydra_bank_b[label="hydra (Bank B)",shape="ellipse"];
+        bank_ui_bank_b[label="Bank UI (Bank B)",shape="polygon"];
+        bank_agent_b[label="Bank Agent (Bank B)",shape="polygon"];
+    }
+
+    subgraph cluster_core {
+	label = "Enki";
+        enki_core[label="Enki Core",shape="ellipse"];
+        hydra_core[label="Hydra(Core)",shape="ellipse"];
+        pg_core[label="Postgres(Core)",shape="polygon"];
+    }
+
+    hydra_bank_a -> pg_bank_a;
+    bank_ui_bank_a -> hydra_bank_a[style="dotted"];
+    hydra_bank_a -> bank_ui_bank_a[style="dotted"];
+    bank_ui_bank_a -> hydra_bank_a;
+    bank_ui_bank_a -> bank_agent_a;
+    bank_ui_bank_a -> enki_core[style="dotted"];
+
+    bank_agent_a -> enki_core;
+    enki_core -> bank_agent_a;
+    # Not sure about these.
+    bank_agent_a -> consus_keyserver;
+    bank_agent_a -> consus_upspinserver;
+
+    enki_core -> hydra_bank_a[style="dotted"];
+
+
+    hydra_bank_b -> pg_bank_b;
+    bank_ui_bank_b -> hydra_bank_b[style="dotted"];
+    hydra_bank_b -> bank_ui_bank_b[style="dotted"];
+    bank_ui_bank_b -> hydra_bank_b;
+    bank_ui_bank_b -> bank_agent_b;
+    bank_ui_bank_b -> enki_core[style="dotted"];
+
+    bank_agent_b -> enki_core;
+    enki_core -> bank_agent_b;
+    bank_agent_b -> consus_keyserver;
+    bank_agent_b -> consus_upspinserver;
+    enki_core -> hydra_bank_b[style="dotted"];
+
+    enki_core -> pg_core;
+    hydra_core -> pg_core;
+    hydra_core -> enki_core[style="dotted"];
+    enki_core -> hydra_core;
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="img/enki-lock.ico" type="image/x-icon"/>
+    <!-- <meta name="description" content=""> -->
+    <!-- <meta name="author" content=""> -->
+    <!-- <link rel="icon" href="../../favicon.ico"> -->
+
+    <title>Sign in to continue</title>
+
+    <link rel="stylesheet" href="{{webpackBaseUrl}}/{{lookupdict bundles 'bundle.css'}}">
+    <link rel="stylesheet" href="build/login.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body class="bg">
+
+    {{> alerts }}
+
+    <div class="card login-container p-3 ">
+      <form class="form-signin highlight-bg" role="form" action="{{make-query-params "/login" "next" next "challenge" challenge}}" method="post">
+        <h4 class="panel-brand"><span class="enki-logo">Enki</span></h4>
+        <p class="intro">Welcome! Please sign in to manage your personal information.</p>
+        <p>If you haven't registered yet then please <a href="/register">sign up</a> now or go back <a href="/">home</a>.</p>
+        {{> alerts }}
+        <div class="input-block">
+          <label for="username" class="input-label">Username</label>
+          <input required name="username" id="username" class="form-control" placeholder="User Name" autofocus autocomplete="off">
+        </div>
+        <div class="input-block">
+          <label for="inputPassword" class="input-label">Password</label>
+          <input required name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" autocomplete="off">
+        </div>
+        <div class="input-block">
+          <label for="rememberMe" class="input-label">Remember me</label>
+          <input name="rememberMe" type="checkbox" id="inputRememberMe" class="form-control" autocomplete="off">
+          <button class="btn btn-outline-info pull-right" type="submit" id="submit">Sign in</button>
+        </div>
+        <input id="__anti-forgery-token" type="hidden" name="__anti-forgery-token" value="{{csrfToken}}">
+      </form>
+    </div>
+</body>
+</html>

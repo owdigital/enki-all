@@ -1,0 +1,94 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:9.6-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+  hydra:
+    image: oryd/hydra:v0.9.16-without-telemetry
+    environment:
+      - DISABLE_TELEMETRY=1
+      - DATABASE_URL=memory
+      - FORCE_ROOT_CLIENT_CREDENTIALS=admin:demo-password
+      - ISSUER=http://hydra:4444/
+      - SYSTEM_SECRET=y82XL-wAPCCZu+B4
+      - CONSENT_URL=http://clojure:9020/consent
+    entrypoint: ["hydra", "host", "--dangerous-force-http", "--disable-telemetry"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  core:
+    build:
+      context: test
+      dockerfile: Dockerfile.core
+    depends_on:
+      - postgres
+      - hydra
+    user: root
+    entrypoint: bash -c "wait-for-it --timeout=60 hydra:4444 -- wait-for-it --timeout=60 postgres:5432 -- java -jar /app/target/enki.jar $$@" --
+    environment:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/postgres?user=postgres&password=postgres
+      - HYDRA_SERVER_URL=http://hydra:4444
+      - HTTP_PORT=3000
+  keyserver:
+    image: enki/upspin-keyserver:${UPSPIN_IMAGE_TAG:-latest}
+    environment:
+      - KEYSERVER_FQDN=keyserver
+      - UPSPINSERVER_FQDN=upspinserver
+  upspinserver:
+    image: enki/upspin-server:${UPSPIN_IMAGE_TAG:-latest}
+    depends_on:
+      - keyserver
+    environment:
+      - KEYSERVER_FQDN=keyserver
+      - UPSPINSERVER_FQDN=upspinserver
+      - EXTRA_CONSUS_WRITERS=test-agent1@test.labshift.io test-agent2@test.labshift.io
+  agent:
+    image: enki/agent:${AGENT_IMAGE_TAG:-latest}
+    depends_on:
+      - core
+      - upspinserver
+    entrypoint: bash -c "/srv/wait-for-it --timeout=60 upspinserver:8090 -- /srv/wait-for-it --timeout=60 core:3000 -- /srv/configure-upspin.sh && /srv/run.sh"
+    environment:
+      - ENKI_SERVER_URL=http://core:3000/
+      - CONSUS_USER=test-agent1@test.labshift.io
+      - BANK_NAME=bank-a
+      - AGENT_URL=http://agent:3010/
+      - OAUTH_CLIENT_ID=bank-a-client
+      - UPSPINSERVER_FQDN=upspinserver
+      - UPSPINSERVER_PORT=8090
+    volumes:
+      - ~/.m2:/root/.m2
+  agent2:
+    image: enki/agent:${AGENT_IMAGE_TAG:-latest}
+    depends_on:
+      - core
+      - upspinserver
+    entrypoint: bash -c "/srv/wait-for-it --timeout=60 upspinserver:8090 -- /srv/wait-for-it --timeout=60 core:3000 -- /srv/configure-upspin.sh && /srv/run.sh"
+    environment:
+      - ENKI_SERVER_URL=http://core:3000/
+      - CONSUS_USER=test-agent2@test.labshift.io
+      - BANK_NAME=bank-b
+      - AGENT_URL=http://agent2:3010/
+      - OAUTH_CLIENT_ID=bank-b-client
+      - UPSPINSERVER_FQDN=upspinserver
+      - UPSPINSERVER_PORT=8090
+    volumes:
+      - ~/.m2:/root/.m2
+  agent-test:
+    build:
+      context: test
+      dockerfile: integration/Dockerfile
+    links:
+      - agent
+      - agent2
+    entrypoint: ""

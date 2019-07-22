@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e -o nounset -o pipefail
+
+DEFAULT_ZONE=temp-enki.labshift.io
+
+KUBECTL_FLAGS=${KUBECTL_FLAGS:-}
+
+usage() {
+  echo "Usage: $0: k8s-namespace"
+}
+
+shift $((OPTIND-1))
+
+if [ $# -lt 1 ]; then
+  usage
+  exit 1
+fi
+
+namespace=$1
+
+kubectl $KUBECTL_FLAGS --namespace ${namespace} get service/demo-suite --output=yaml
+kubectl $KUBECTL_FLAGS --namespace ${namespace} get ing/demo-suite-ingress --output=yaml
+
+function get_lb() {
+  kubectl $KUBECTL_FLAGS --namespace ${namespace} get ing/demo-suite-ingress -o 'jsonpath={.status.loadBalancer.ingress[*].hostname}'
+}
+
+lb=''
+deadline=$(date -d 'now + 2 minute' +%s)
+while [ -z "$lb" -a "$(date +%s)" -lt "$deadline" ]; do
+  sleep 1;
+  lb=$(get_lb)
+done
+
+echo "Your environment will be accessible via the following hostnames:"
+kubectl $KUBECTL_FLAGS --namespace ${namespace} get ing/demo-suite-ingress --output=jsonpath='{.spec.rules[*].host}{"\n"}'
+echo "Assuming you have added CNAMES to: $lb"

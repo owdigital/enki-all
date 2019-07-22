@@ -1,0 +1,60 @@
+#!/bin/bash
+
+TIMEOUT=${TIMEOUT:-300}
+KUBECTL=kubectl
+if [ ! -z "${K8S_CONTEXT:-}" ]; then
+  KUBECTL="$KUBECTL --context $K8S_CONTEXT"
+fi
+
+# Wait 6 minutes for previous mounts to clear from driver
+DISK_TIMEOUT=${DISK_TIMEOUT:-360}
+
+INIT_TIMEOUT=${INIT_TIMEOUT:-120}
+
+function retry() {
+  for attempt in {0..5}; do
+    if "$@"; then
+      return
+    else
+      local status=$?
+      local sleeptime=$((1<<attempt))
+      echo 1>&2 "Command exited with status $status; retrying after ${sleeptime}s"
+      sleep $sleeptime
+    fi
+  done
+
+  # All attempts were exhausted, probably have a pod stuck in init
+  #sleep $DISK_TIMEOUT
+  # Can't see the pod name here, so check all pods
+  # And find the ones stuck in the init phase and force detach their ebs volumes
+  #$KUBECTL -n "$k8s_namespace" get pods | grep Init | awk '{print $1}' | while read pod_id
+  #do
+  #  CLAIM_NAME=$($KUBECTL -n "$k8s_namespace" describe pods $pod_id | grep -o -e "ClaimName.*" | cut -c13-)
+  #  PVC_ID=$($KUBECTL -n "$k8s_namespace" describe pvc $CLAIM_NAME | grep -o -e "pvc-.*-.*")
+  #  VOLUME_ID=$($KUBECTL -n "$k8s_namespace" describe pv $PVC_ID | grep -o -e "vol.*")
+  #  aws ec2 detach-volume --volume-id $VOLUME_ID --force
+  #done
+  # Wait for things to get back to normal
+  #sleep $INIT_TIMEOUT
+  # Run the given command again
+  $@
+}
+
+export SHELLOPTS
+
+trap 'echo "Timed out (probably)!"; exit 1' TERM
+
+set -x -e -o nounset -o pipefail
+
+if [ -z "${__WITH_TIMEOUT-}" ]; then
+  __WITH_TIMEOUT=t exec timeout "$TIMEOUT" "$0" "$@"
+fi
+
+k8s_namespace=$1
+shift 1
+
+for i in $(seq 1 $#); do
+  resource=${!i}
+  echo "Waiting for ${resource} ${i}/$#..."
+  retry $KUBECTL -n "$k8s_namespace" rollout status "$resource"
+done

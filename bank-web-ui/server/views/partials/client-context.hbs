@@ -1,0 +1,7 @@
+{{#if this.length}}
+    <script>
+        {{#each this}}
+            app.context['{{name}}'] = {{{json value}}};
+        {{/each}}
+    </script>    
+{{/if}}
