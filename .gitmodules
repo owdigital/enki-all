@@ -4,3 +4,4 @@
 [submodule "upspin"]
 	path = upspin
 	url = https://github.com/owdigital/upspin.git
+	branch = consus-base
