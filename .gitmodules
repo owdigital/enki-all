@@ -1,6 +1,7 @@
-[submodule "upspin"]
-	path = upspin
-	url = https://github.com/upspin/upspin.git
 [submodule "common/bletchley"]
 	path = common/bletchley
 	url = https://github.com/lshift/bletchley.git
+[submodule "upspin"]
+	path = upspin
+	url = https://github.com/owdigital/upspin.git
+	branch = consus-base
