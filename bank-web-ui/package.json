@@ -65,7 +65,7 @@
     "express-handlebars": "^3.1.0",
     "express-session": "^1.16.1",
     "file-loader": "^3.0.1",
-    "handlebars": "^4.1.2",
+    "handlebars": "^4.3.0",
     "helmet": "^3.18.0",
     "hydra-js": "^0.1.5",
     "jquery": "^3.4.1",
