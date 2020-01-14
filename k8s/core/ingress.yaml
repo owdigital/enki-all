@@ -8,8 +8,8 @@ metadata:
     nginx.ingress.kubernetes.io/auth-realm: Authentication Required - Enki
     nginx.ingress.kubernetes.io/auth-secret: enki-basic-auth
     nginx.ingress.kubernetes.io/auth-type: basic
-    certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
-    certmanager.k8s.io/acme-challenge-type: http01
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/acme-challenge-type: http01
 spec:
   tls:
   - secretName: core-enki-tls
