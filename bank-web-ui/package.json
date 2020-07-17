@@ -70,7 +70,7 @@
     "hydra-js": "^0.1.5",
     "jquery": "^3.4.1",
     "less-loader": "^5.0.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.19",
     "mini-css-extract-plugin": "^0.6.0",
     "nodemon": "^1.19.0",
     "npm-font-open-sans": "^1.1.0",
