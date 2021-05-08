@@ -11,5 +11,5 @@ selenium==3.9.0
 Flask==1.0.2
 kubernetes==4.0.0
 flask-socketio==2.9.3
-eventlet==0.22.0
+eventlet==0.31.0
 gunicorn==19.7.1
